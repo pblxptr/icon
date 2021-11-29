@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/eblxptr/Drafts/zmq_boost/event_bus.hpp
+boost/signals2/signal.hpp
+-
+
+/home/eblxptr/Drafts/zmq_boost/main.cpp
+boost/asio.hpp
+-
+zmqpp/zmqpp.hpp
+-
+spdlog/spdlog.h
+-
+thread
+-
+zmqpp/poller.hpp
+-
+vector
+-
+zmq_socket_event_bus.hpp
+/home/eblxptr/Drafts/zmq_boost/zmq_socket_event_bus.hpp
+
+/home/eblxptr/Drafts/zmq_boost/zmq_socket_event_bus.hpp
+zmqpp/zmqpp.hpp
+-
+event_bus.hpp
+/home/eblxptr/Drafts/zmq_boost/event_bus.hpp
+

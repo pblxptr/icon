@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/zmq_boost.dir/main.cpp.o -o zmq_boost  -lpthread -lzmq -lzmqpp 
