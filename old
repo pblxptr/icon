@@ -1,0 +1,69 @@
+class RecvZmqStreamDescriptor
+{
+public:
+  RecvZmqStreamDescriptor(boost::asio::io_context& ctx, zmq::socket_t& socket)
+    : socket_{socket}
+    , streamd_{ctx, socket_.get(zmq::sockopt::fd)}
+  {}
+
+  void run()
+  {
+    check_events();
+  }
+
+  void async_wait()
+  {
+    spdlog::debug("ZmqStreamDescriptor::async_wait");
+
+    streamd_.async_wait(boost::asio::posix::stream_descriptor::wait_type::wait_error,
+      [this](const auto& ec) { 
+        if (ec) {
+          spdlog::debug("ZmqStreamDescriptor::async_wait::wait_error: {}", ec.message());
+          return;
+        }
+        check_events(); 
+      }
+    );
+
+    streamd_.async_wait(boost::asio::posix::stream_descriptor::wait_type::wait_read,
+      [this](const auto& ec) { 
+        if (ec) {
+          spdlog::debug("ZmqStreamDescriptor::async_wait::wait_read {}", ec.message());
+          return;
+        }
+        check_events(); 
+      }
+    );
+  }
+private:
+  void check_events()
+  {
+    spdlog::debug("check_events");
+    const auto events = socket_.get(zmq::sockopt::events);
+
+    if (events & ZMQ_POLLERR) {
+      handle_error();
+    } else if (events & ZMQ_POLLIN) {
+      handle_error();
+    } else {
+      async_wait();
+    }
+  }
+
+  void handle_error()
+  {
+    spdlog::debug("handle_error");
+  }
+
+  void handle_read()
+  {
+    spdlog::debug("handle_read");
+    auto parts = std::vector<zmq::message_t>{};
+    const auto num_of_parts = zmq::recv_multipart(socket_, std::back_inserter(parts));
+    spdlog::debug("handle_read::parts: {}", num_of_parts.value_or(0));
+  }
+private:
+  zmq::socket_t& socket_;
+  boost::asio::posix::stream_descriptor streamd_;
+};
+

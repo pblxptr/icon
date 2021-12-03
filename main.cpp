@@ -1,134 +1,99 @@
 #include <boost/asio.hpp>
-#include <zmqpp/zmqpp.hpp>
 #include <spdlog/spdlog.h>
 #include <thread>
-#include <zmqpp/poller.hpp>
 #include <vector>
 #include "zmq_socket_event_bus.hpp"
+#include <zmq.hpp>
+#include <zmq_addon.hpp>
+#include "stream_watcher.hpp"
+#include "accept_monitor.hpp"
+#include "flags.hpp"
+#include <cassert>
+#include <sstream>
 
 auto io_context = boost::asio::io_context{};
-auto zmq_context = zmqpp::context_t{};
+auto zmq_context = zmq::context_t{};
 auto event_bus = ZmqSocketEventBus{};
 
-constexpr auto ZmqEndpoint = "inproc://zmq_boost";
+constexpr auto ZmqClientEndpoint = "tcp://127.0.0.1:6667";
+constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
 
-auto get_fd(zmqpp::socket_t& socket)
-{
-  return socket.get<int>(zmqpp::socket_option::file_descriptor);
-}
+static constexpr size_t Messages = 50;
 
-class ZmqSocketDescriptor
+class ZmqReadOp
 {
 public:
-  ZmqSocketDescriptor(zmqpp::socket_t zmq_socket, boost::asio::io_context& ctx, ZmqSocketEventBus& bus)
-    : zmq_socket_{std::move(zmq_socket)}
-    , streamd_{ctx, get_fd(zmq_socket_)}
-    , bus_{bus}
-{
-}
-  void async_wait()
+  explicit ZmqReadOp(zmq::socket_t& socket, StreamWatcher& watcher)
+    : socket_{socket} 
+    , watcher_{watcher}
+{}
+
+  void run()
   {
-    wait_for_error();
-    wait_for_read();
+    watcher_.async_wait_receive([this]() { handle(); });
   }
 
-  void send(zmqpp::message_t&& msg)
+  void handle()
   {
-    spdlog::debug("ZmqSocketDescriptor::send()");
-    
-    zmq_socket_.send(msg);
-    check_events();
-  }
-private:
-  void wait_for_error()
-  {
-    spdlog::debug("ZmqSocketDescriptor::wait_for_error()");
-    streamd_.async_wait(boost::asio::posix::stream_descriptor::wait_type::wait_error,
-      [this](const auto& ec) { 
-        if (ec) {
-          spdlog::debug("wait_for_error: {}", ec.message());
-          return;
-        }
-        check_events(); 
-      }
-    );
-  }
+    spdlog::debug("ZmqReadOp::handle()");
+  
+    auto parts = std::vector<zmq::message_t>();
+    auto parts_count = zmq::recv_multipart(socket_, std::back_inserter(parts));
 
-  void wait_for_read()
-  {
-    spdlog::debug("ZmqSocketDescriptor::wait_for_read()");
-    streamd_.async_wait(boost::asio::posix::stream_descriptor::wait_type::wait_read,
-      [this](const auto& ec) { 
-        if (ec) {
-          spdlog::debug("wait_for_read: {}", ec.message());
-          return;
-        }
+    spdlog::debug("Parts received: {}", parts_count.value_or(0));
 
-        check_events(); 
-      }
-    );
-  }
+    ++count_;
 
-  void check_events()
-  {
-    const auto events = zmq_socket_.get<int>(zmqpp::socket_option::events);
+    assert(parts_count == 2);
 
-    if (events & ZMQ_POLLERR) {
-      handle_error();
-    } else if (events & ZMQ_POLLIN) {
-      handle_read();
-    } else {
-      async_wait();
+    spdlog::debug("Number of messages: {}", count_);
+
+    if (count_ == Messages) {
+      auto ss = std::stringstream{};
+      ss << "Messages received: " << Messages ;
+
+
+      throw std::runtime_error(ss.str());
     }
+
+    run();
   }
 
-  void handle_error()
-  {
-    spdlog::debug("ZmqSocketDescriptor::check_for_error()");
-    
-    check_events(); 
-  }
-
-  void handle_read()
-  {
-    spdlog::debug("ZmqSocketDescriptor::check_for_read()");
-
-    auto msg = zmqpp::message_t{};
-
-    zmq_socket_.receive(msg);
-
-    bus_.publish(ZmqMessageReceived{
-      *this, 
-      std::move(msg)
-    });
-
-    check_events();
-  }
+size_t count_{0};
 
 private:
-  zmqpp::socket_t zmq_socket_;
-  boost::asio::posix::stream_descriptor streamd_;
-  ZmqSocketEventBus& bus_;
+  zmq::socket_t& socket_;
+  StreamWatcher& watcher_;
 };
+
 
 void server()
 {
   namespace posix = boost::asio::posix;
 
-  event_bus.subscribe<ZmqMessageReceived>([](const auto& event)
-  {
-    spdlog::debug("Event: ZmqMessage::Received, Parts: {}", event.message.parts());
-  });
+  auto start = std::chrono::system_clock::now();
 
-  
-  auto zmq_socket = zmqpp::socket{zmq_context, zmqpp::socket_type::router};
-  zmq_socket.bind(ZmqEndpoint);
+  try {
+    auto local_ctx = zmq::context_t{};
 
-  auto zmq_stream_descriptor = ZmqSocketDescriptor{std::move(zmq_socket), io_context, event_bus};
-  zmq_stream_descriptor.async_wait();
+    auto socket = zmq::socket_t{local_ctx, zmq::socket_type::router};
+    socket.bind(ZmqServerEndpoint);
 
+    auto zmq_sd = StreamWatcher{socket, io_context};
+    auto zmq_read_op = ZmqReadOp(socket, zmq_sd);
+    zmq_read_op.run();
 
-  io_context.run();
+    using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+    work_guard_type work_guard(io_context.get_executor());
+    io_context.run();
+
+  } catch(const std::exception& e) {
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff = end - start;
+
+    spdlog::info("Time to pass {} messages over the system: {}s", Messages, diff.count());
+  }
+
 }
 
 void client()
@@ -137,23 +102,54 @@ void client()
   std::this_thread::sleep_for(std::chrono::seconds(5));
   spdlog::info("client: ready");
 
-  spdlog::info("Client before connect && send");
-  auto zmq_socket = zmqpp::socket{zmq_context, zmqpp::socket_type::dealer};
-  zmq_socket.connect(ZmqEndpoint);
-  zmq_socket.send("test");
+  size_t counter = 0;
+
+  auto local_ctx = zmq::context_t{};
+  auto zmq_socket = zmq::socket_t{local_ctx, zmq::socket_type::dealer};
+
+  auto send_msg = [&zmq_socket]()
+  {
+    auto events = zmq_socket.get(zmq::sockopt::events);
+    do {
+      events = zmq_socket.get(zmq::sockopt::events);
+    } while (!(events & ZMQ_POLLOUT));
+
+    const auto ret = zmq_socket.send(zmq::str_buffer("Testtesttest"), zmq::send_flags::dontwait);
+
+    // spdlog::info("Send ret: {}, {}", ret.value_or(999999), zmq_errno());
+  };
+
+  zmq_socket.connect(ZmqClientEndpoint);
+  spdlog::info("Client connected");
+
+  send_msg();
   spdlog::info("Client sent 1st msg\n");
 
-  spdlog::info("Client before send");
-  std::this_thread::sleep_for(std::chrono::seconds(5));
-  zmq_socket.send("test2");
+  std::this_thread::sleep_for(std::chrono::seconds(4));
+  send_msg();
   spdlog::info("Client sent 2nd message\n");
 
-  while (1) {}
+  while(true) {
+    send_msg();
+    counter++;
+
+    if (counter == Messages) {
+      break;
+    }
+  }
+
+  spdlog::debug("Client finished");
+
+  while(1) {}
 }
+
+
+
 
 int main()
 {
   spdlog::set_level(spdlog::level::debug);
+
   auto th_server = std::thread(server);
   auto th_client = std::thread(client);
 
