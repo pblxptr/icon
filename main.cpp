@@ -2,28 +2,39 @@
 #include <spdlog/spdlog.h>
 #include <thread>
 #include <vector>
-#include "zmq_socket_event_bus.hpp"
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
 #include "stream_watcher.hpp"
-#include "accept_monitor.hpp"
 #include "flags.hpp"
 #include <cassert>
 #include <sstream>
+#include <random>
+#include "zmq_recv_op.hpp"
+#include "icon.hpp"
 
 auto io_context = boost::asio::io_context{};
 auto zmq_context = zmq::context_t{};
-auto event_bus = ZmqSocketEventBus{};
 
 constexpr auto ZmqClientEndpoint = "tcp://127.0.0.1:6667";
 constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
 
-static constexpr size_t Messages = 50;
+static constexpr size_t Messages = 10000;
+static constexpr size_t NumberOfClientThreads = 2;
+
+static auto rd = std::random_device{};
+
+auto random_delay()
+{
+  static auto gen = std::mt19937{rd()};
+  static auto dist = std::uniform_int_distribution<>(0, 1000);
+
+  return dist(gen);
+}
 
 class ZmqReadOp
 {
 public:
-  explicit ZmqReadOp(zmq::socket_t& socket, StreamWatcher& watcher)
+  explicit ZmqReadOp(zmq::socket_t& socket, icon::details::StreamWatcher& watcher)
     : socket_{socket} 
     , watcher_{watcher}
 {}
@@ -48,10 +59,11 @@ public:
 
     spdlog::debug("Number of messages: {}", count_);
 
-    if (count_ == Messages) {
+    // std::this_thread::sleep_for(std::chrono::milliseconds(random_delay()));
+
+    if (count_ == Messages * NumberOfClientThreads) {
       auto ss = std::stringstream{};
       ss << "Messages received: " << Messages ;
-
 
       throw std::runtime_error(ss.str());
     }
@@ -63,7 +75,34 @@ size_t count_{0};
 
 private:
   zmq::socket_t& socket_;
-  StreamWatcher& watcher_;
+  icon::details::StreamWatcher& watcher_;
+};
+
+struct CountMessagesHandler
+{
+  icon::details::ZmqRecvOp& recv_op;
+  size_t messages {0};
+
+  void start_counter()
+  {
+    recv_op.async_receive([this](std::vector<zmq::message_t>&& m)
+    {
+      handle(std::move(m));
+    });
+  }
+
+  void handle(std::vector<zmq::message_t>&& parts)
+  {
+    if (++messages == Messages * NumberOfClientThreads)
+    {
+      auto ss = std::stringstream{};
+      ss << "Messages received: " << Messages ;
+
+      throw std::runtime_error(ss.str());
+    }
+
+    start_counter();
+  }
 };
 
 
@@ -79,9 +118,13 @@ void server()
     auto socket = zmq::socket_t{local_ctx, zmq::socket_type::router};
     socket.bind(ZmqServerEndpoint);
 
-    auto zmq_sd = StreamWatcher{socket, io_context};
-    auto zmq_read_op = ZmqReadOp(socket, zmq_sd);
-    zmq_read_op.run();
+    auto watcher = icon::details::StreamWatcher{socket, io_context};
+    // auto zmq_read_op = ZmqReadOp(socket, zmq_sd);
+    // zmq_read_op.run();
+
+    auto zmq_recv_op = icon::details::ZmqRecvOp{socket, watcher};
+    auto counter = CountMessagesHandler{zmq_recv_op};
+  
 
     using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
     work_guard_type work_guard(io_context.get_executor());
@@ -91,7 +134,7 @@ void server()
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> diff = end - start;
 
-    spdlog::info("Time to pass {} messages over the system: {}s", Messages, diff.count());
+    spdlog::info("Time to pass {} messages over the system: {}s", Messages * NumberOfClientThreads, diff.count());
   }
 
 }
@@ -148,11 +191,25 @@ void client()
 
 int main()
 {
+  boost::asio::posix::stream_descriptor s{io_context};
+  
+
+
   spdlog::set_level(spdlog::level::debug);
 
   auto th_server = std::thread(server);
-  auto th_client = std::thread(client);
+  // auto th_client = std::thread(client);
+
+  auto threads = std::vector<std::thread>{};
+
+  for (size_t i = 0; i < NumberOfClientThreads; i++) {
+    threads.push_back(std::thread(client));
+  }
+  
+  for (auto& th : threads) {
+    th.join();
+  }
 
   th_server.join();
-  th_client.join();
+  // th_client.join();
 }

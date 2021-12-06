@@ -6,14 +6,14 @@
 
 #IncludeRegexTransform: 
 
-/home/eblxptr/Drafts/zmq_boost/accept_monitor.hpp
-
-/home/eblxptr/Drafts/zmq_boost/event_bus.hpp
-boost/signals2/signal.hpp
--
-
 /home/eblxptr/Drafts/zmq_boost/flags.hpp
 bitset
+-
+
+/home/eblxptr/Drafts/zmq_boost/icon.hpp
+zmq.hpp
+-
+concepts
 -
 
 /home/eblxptr/Drafts/zmq_boost/main.cpp
@@ -25,22 +25,24 @@ thread
 -
 vector
 -
-zmq_socket_event_bus.hpp
-/home/eblxptr/Drafts/zmq_boost/zmq_socket_event_bus.hpp
 zmq.hpp
 -
 zmq_addon.hpp
 -
 stream_watcher.hpp
 /home/eblxptr/Drafts/zmq_boost/stream_watcher.hpp
-accept_monitor.hpp
-/home/eblxptr/Drafts/zmq_boost/accept_monitor.hpp
 flags.hpp
 /home/eblxptr/Drafts/zmq_boost/flags.hpp
 cassert
 -
 sstream
 -
+random
+-
+zmq_recv_op.hpp
+/home/eblxptr/Drafts/zmq_boost/zmq_recv_op.hpp
+icon.hpp
+/home/eblxptr/Drafts/zmq_boost/icon.hpp
 
 /home/eblxptr/Drafts/zmq_boost/stream_watcher.hpp
 zmq.hpp
@@ -56,9 +58,13 @@ spdlog/spdlog.h
 
 /home/eblxptr/Drafts/zmq_boost/utils.hpp
 
-/home/eblxptr/Drafts/zmq_boost/zmq_socket_event_bus.hpp
-zmqpp/zmqpp.hpp
+/home/eblxptr/Drafts/zmq_boost/zmq_recv_op.hpp
+zmq.hpp
 -
-event_bus.hpp
-/home/eblxptr/Drafts/zmq_boost/event_bus.hpp
+zmq_addon.hpp
+-
+stream_watcher.hpp
+/home/eblxptr/Drafts/zmq_boost/stream_watcher.hpp
+icon.hpp
+/home/eblxptr/Drafts/zmq_boost/icon.hpp
 

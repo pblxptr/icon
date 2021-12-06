@@ -5,6 +5,7 @@
 #include "utils.hpp"
 #include <spdlog/spdlog.h>
 
+namespace icon::details {
 class StreamWatcher
 {
   enum class ZmqOperation {
@@ -23,6 +24,11 @@ public:
     , streamd_{context, socket_.get(zmq::sockopt::fd)}
   {}
 
+  StreamWatcher(const StreamWatcher&) = delete;
+  StreamWatcher& operator=(const StreamWatcher&) = delete;
+  StreamWatcher(StreamWatcher&&) = default;
+  StreamWatcher& operator=(StreamWatcher&&) = default;
+
   ~StreamWatcher()
   {
     stop();
@@ -31,15 +37,23 @@ public:
   template<class THandler>
   void async_wait_receive(THandler&& handler)
   {
-    spdlog::debug("ZmqStreamDescriptor::async_wait_receive");
+    spdlog::debug("StreamWatcher::async_wait_receive");
 
     setup_async_wait(ZmqOperation::Read, Wait_t::wait_read, std::forward<THandler>(handler));
   }
 
   template<class THandler>
+  void async_wait_send(THandler&& handler)
+  {
+    spdlog::debug("StreamWatcher::async_wait_send");
+  
+    setup_async_wait(ZmqOperation::Write, Wait_t::wait_write, std::forward<THandler>(handler));
+  }
+
+  template<class THandler>
   void async_wait_error(THandler&& handler)
   {
-    spdlog::debug("ZmqStreamDescriptor::async_wait_error");
+    spdlog::debug("StreamWatcher::async_wait_error");
 
     setup_async_wait(ZmqOperation::Error, Wait_t::wait_error, std::forward<THandler>(handler));
   }
@@ -52,7 +66,7 @@ public:
 
 private:
   template<class THandler>
-  void setup_async_wait(ZmqOperation op, Wait_t wt, THandler&& handler)
+  void setup_async_wait(ZmqOperation op, Wait_t wait_type, THandler&& handler)
   {
     if (check_ops(op)) {
       spdlog::debug("StreamWatcher::setup_async_wait -> flags was set");
@@ -60,15 +74,21 @@ private:
 
       return;
     }
-
-    streamd_.async_wait(wt, [this, op, h = std::forward<THandler>(handler)](const auto& ec)
+  
+    streamd_.async_wait(wait_type, [wait_type, this, op, hnd = std::forward<THandler>(handler)](const auto& ec)
     {
+      using Handler_t = decltype(hnd);
       if (ec) {
-        std::abort();
+        throw ec;
       }
       spdlog::debug("async_wait_triggered");
+      
       if (check_ops(op)) {
-        complete(op, std::forward<decltype(h)>(h));
+        //Ready to read
+        complete(op, std::forward<Handler_t>(hnd));
+      } else {
+        //We've got a false positive here. Restart watcher.
+        setup_async_wait(op, wait_type, std::forward<Handler_t>(hnd));
       }
     });
   }
@@ -92,10 +112,8 @@ private:
     if (events & op_event_flag) {
       spdlog::debug("check_ops::set_flag");
       flags_.set(op);
-
       return true;
     }
-
     return false;
   }
 
@@ -110,3 +128,4 @@ private:
   boost::asio::posix::stream_descriptor streamd_;
   Flags_t flags_;
 };
+}

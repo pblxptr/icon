@@ -2,6 +2,7 @@
 
 #include <bitset>
 
+namespace icon::details {
 template <typename T>
 class Flags {
   static_assert(std::is_enum_v<T>, "Flags can only be specialized for enum types");
@@ -37,3 +38,4 @@ private:
 private:
     std::bitset<underlying(T::_size)> bits_;
 };
+}
