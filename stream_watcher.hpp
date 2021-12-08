@@ -116,15 +116,15 @@ private:
     // scheduler(context(), check_ops(op));
 
     //(2)
-    schedule(context(), std::forward<THandler>(handler));
-    check_ops(op, "additional");
+    // schedule(context(), std::forward<THandler>(handler));
+    // check_ops(op, "additional");
 
     //(3)
-    // schedule(context(), [op, h = std::forward<THandler>(handler), this]() mutable
-    // {
-    //   h();
-    //   check_ops(op);
-    // });
+    schedule(context(), [op, h = std::forward<THandler>(handler), this]() mutable
+    {
+      h();
+      // check_ops(op, "additional");
+    });
 
     // schedule(context(), [this, op]() { 
     //   spdlog::debug("schedule for check_ops only");

@@ -12,6 +12,7 @@
 #include "zmq_recv_op.hpp"
 #include "zmq_send_op.hpp"
 #include "icon.hpp"
+#include <iostream>
 
 auto io_context = boost::asio::io_context{};
 auto zmq_context = zmq::context_t{};
@@ -19,8 +20,11 @@ auto zmq_context = zmq::context_t{};
 constexpr auto ZmqClientEndpoint = "tcp://127.0.0.1:6667";
 constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
 
-static constexpr size_t Messages = 100000;
-static constexpr size_t NumberOfClientThreads = 3;
+// constexpr auto ZmqClientEndpoint = "ipc://test";
+// constexpr auto ZmqServerEndpoint = "ipc://test";
+
+static constexpr size_t Messages = 200000;
+static constexpr size_t NumberOfClientThreads = 1;
 
 static auto rd = std::random_device{};
 
@@ -77,7 +81,8 @@ struct CountMessagesHandler
       send_op.async_send(std::move(p), ch);
     };
 
-    send_func();
+    // send_func();
+    send_ch();
 
   }
 };
@@ -109,7 +114,8 @@ void server()
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> diff = end - start;
 
-    spdlog::info("Time to pass {} messages over the system: {}s", Messages * NumberOfClientThreads, diff.count());
+    std::cout << "Time to pass: " << Messages * NumberOfClientThreads << " messages over the system: " << diff.count() << "s\n";
+    // spdlog::info("Time to pass {} messages over the system: {}s", Messages * NumberOfClientThreads, diff.count());
   }
 
 }
@@ -144,10 +150,14 @@ void client()
     auto value_to_send = std::to_string(counter);
     send_msg(value_to_send);
 
-    auto msg = zmq::message_t{};
-    const auto ret = socket.recv(msg);
+    spdlog::info("Client sent a message");
+    spdlog::info("Client is waiting for a message");
+    // auto msg = zmq::message_t{};
+    // const auto ret = socket.recv(msg);
+    // spdlog::info("Client received a message");
 
-    assert(msg.to_string() == value_to_send);
+
+    // assert(msg.to_string() == value_to_send);
 
     counter++;
     if (counter == Messages) {
@@ -166,7 +176,7 @@ int main()
   
 
 
-  spdlog::set_level(spdlog::level::debug);
+  spdlog::set_level(spdlog::level::off);
 
   auto th_server = std::thread(server);
   auto threads = std::vector<std::thread>{};

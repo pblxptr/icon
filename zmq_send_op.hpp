@@ -40,6 +40,7 @@ private:
   template<class TMessage, class THandler> requires MessageToSend<TMessage> && MultipartDynamicMessage<TMessage>
   void handle_ready_send(TMessage&& messages, THandler&& handler)
   {
+    spdlog::debug("zmq_send_op::handle_ready_send enter");
     const auto messages_sent = zmq::send_multipart(socket_, std::forward<TMessage>(messages), zmq::send_flags::dontwait);
 
     spdlog::debug("zmq_send_op::handle_ready_send: {}", messages_sent.value_or(0));
