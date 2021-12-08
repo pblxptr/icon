@@ -8,3 +8,4 @@ CMakeFiles/zmq_boost.dir/main.cpp.o
  /home/eblxptr/Drafts/zmq_boost/stream_watcher.hpp
  /home/eblxptr/Drafts/zmq_boost/utils.hpp
  /home/eblxptr/Drafts/zmq_boost/zmq_recv_op.hpp
+ /home/eblxptr/Drafts/zmq_boost/zmq_send_op.hpp

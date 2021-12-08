@@ -65,19 +65,30 @@ public:
   }
 
 private:
+  const char* op_to_str(ZmqOperation op)
+  {
+    if (op == ZmqOperation::Read) {
+      return "zmq_read";
+    } else if (op == ZmqOperation::Write) {
+      return "zmq_write";
+    } else {
+      return "unknown";
+    }
+  }
+
+
   template<class THandler>
   void setup_async_wait(ZmqOperation op, Wait_t wait_type, THandler&& handler)
   {
     if (check_ops(op)) {
-      spdlog::debug("StreamWatcher::setup_async_wait -> flags was set");
+      spdlog::debug("StreamWatcher::setup_async_wait for op: {} -> flags was set", op_to_str(op));
       complete(op, std::forward<THandler>(handler));
 
       return;
     }
   
-    streamd_.async_wait(wait_type, [wait_type, this, op, hnd = std::forward<THandler>(handler)](const auto& ec)
+    streamd_.async_wait(wait_type, [wait_type, this, op, hnd = std::forward<THandler>(handler)](auto&& ec) mutable
     {
-      using Handler_t = decltype(hnd);
       if (ec) {
         throw ec;
       }
@@ -85,10 +96,10 @@ private:
       
       if (check_ops(op)) {
         //Ready to read
-        complete(op, std::forward<Handler_t>(hnd));
+        complete(op, std::forward<decltype(hnd)>(hnd));
       } else {
         //We've got a false positive here. Restart watcher.
-        setup_async_wait(op, wait_type, std::forward<Handler_t>(hnd));
+        setup_async_wait(op, wait_type, std::forward<decltype(hnd)>(hnd));
       }
     });
   }
@@ -96,23 +107,43 @@ private:
   template<class THandler>
   void complete(ZmqOperation op, THandler&& handler)
   {
-    spdlog::debug("ZmqStreamDescriptor::complete");
+    spdlog::debug("StreamWatcher::complete for op: {}", op_to_str(op));
 
     flags_.clear(op);
+
+    //(1)
+    // schedule(context(), std::forward<THandler>(handler));
+    // scheduler(context(), check_ops(op));
+
+    //(2)
     schedule(context(), std::forward<THandler>(handler));
-    schedule(context(), [this, op]() { check_ops(op); });
+    check_ops(op, "additional");
+
+    //(3)
+    // schedule(context(), [op, h = std::forward<THandler>(handler), this]() mutable
+    // {
+    //   h();
+    //   check_ops(op);
+    // });
+
+    // schedule(context(), [this, op]() { 
+    //   spdlog::debug("schedule for check_ops only");
+    //   check_ops(op); 
+    // });
   }
 
-  bool check_ops(const ZmqOperation op) 
+  bool check_ops(const ZmqOperation op, const std::string& msg = "default") 
   {
-    spdlog::debug("check_ops");
+
     const auto events = socket_.get(zmq::sockopt::events);
     const auto op_event_flag = static_cast<std::underlying_type_t<ZmqOperation>>(op);
 
     if (events & op_event_flag) {
-      spdlog::debug("check_ops::set_flag");
+        spdlog::debug("check_ops: {} setting flag - {}", op_to_str(op), msg);
       flags_.set(op);
       return true;
+    } else {
+      spdlog::debug("check_ops: {} nothing to set - {}", op_to_str(op), msg);
     }
     return false;
   }
