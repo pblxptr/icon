@@ -71,6 +71,8 @@ private:
       return "zmq_read";
     } else if (op == ZmqOperation::Write) {
       return "zmq_write";
+    } else if (op == ZmqOperation::Error) {
+      return "zmq_error";
     } else {
       return "unknown";
     }

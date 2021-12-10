@@ -1,3 +1,0 @@
-/home/eblxptr/Drafts/zmq_boost/build/CMakeFiles/edit_cache.dir
-/home/eblxptr/Drafts/zmq_boost/build/CMakeFiles/rebuild_cache.dir
-/home/eblxptr/Drafts/zmq_boost/build/CMakeFiles/zmq_boost.dir

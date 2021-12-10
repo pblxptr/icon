@@ -42,6 +42,7 @@ private:
     spdlog::debug("zmq_recv_op::handle_ready_recv enter");
     auto parts = std::vector<zmq::message_t>();
     auto parts_count = zmq::recv_multipart(socket_, std::back_inserter(parts), zmq::recv_flags::dontwait);
+
     spdlog::debug("zmq_recv_op::handle_ready_recv {}", parts_count.value_or(0));
     handler(std::move(parts));
   }
