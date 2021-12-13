@@ -46,7 +46,7 @@ public:
   void async_wait_send(THandler&& handler)
   {
     spdlog::debug("StreamWatcher::async_wait_send");
-  
+
     setup_async_wait(ZmqOperation::Write, Wait_t::wait_write, std::forward<THandler>(handler));
   }
 
@@ -88,14 +88,14 @@ private:
 
       return;
     }
-  
+
     streamd_.async_wait(wait_type, [wait_type, this, op, hnd = std::forward<THandler>(handler)](auto&& ec) mutable
     {
       if (ec) {
         throw ec;
       }
       spdlog::debug("async_wait_triggered");
-      
+
       if (check_ops(op)) {
         //Ready to read
         complete(op, std::forward<decltype(hnd)>(hnd));

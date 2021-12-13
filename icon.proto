@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+import "metadata.proto";
+
+package icon;
+
+message ConnectionEstablishReq
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000001;
+}
+
+message ConnectionEstablishCfm
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000002;
+}
+
+message HeartbeatReq
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000003;
+}
+
+message HeartbeatCfm
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000004;
+}

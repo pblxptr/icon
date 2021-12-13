@@ -20,9 +20,6 @@ auto zmq_context = zmq::context_t{};
 constexpr auto ZmqClientEndpoint = "tcp://127.0.0.1:6667";
 constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
 
-// constexpr auto ZmqClientEndpoint = "ipc://test";
-// constexpr auto ZmqServerEndpoint = "ipc://test";
-
 static constexpr size_t Messages = 2000;
 static constexpr size_t NumberOfClientThreads = 1;
 

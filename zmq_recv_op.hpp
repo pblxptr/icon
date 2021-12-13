@@ -21,7 +21,7 @@ public:
   template<class THandler> requires RegularRecvHandler<THandler> || MultipartDynamicRecvHandler<THandler>
   void async_receive(THandler&& handler)
   {
-    watcher_.async_wait_receive([this, ch = std::forward<THandler>(handler)]() { 
+    watcher_.async_wait_receive([this, ch = std::forward<THandler>(handler)]() {
       handle_ready_recv(std::forward<decltype(ch)>(ch));
     });
   }
