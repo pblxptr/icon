@@ -8,6 +8,7 @@
 #include <spdlog/spdlog.h>
 #include "co_stream_watcher.hpp"
 #include "metadata.pb.h"
+#include "icon.pb.h"
 
 namespace {
   using boost::asio::awaitable;
@@ -20,6 +21,12 @@ struct ProtobufSerializer
   static Number extract_message_number()
   {
     return static_cast<Number>(Message::GetDescriptor()->options().GetExtension(icon::metadata::MESSAGE_NUMBER));
+  }
+
+  template<class Number, class Raw>
+  static Number extract_message_number(const Raw& raw)
+  {
+    return static_cast<Number>(std::stoi(raw.to_string()));
   }
 
   template<class Raw, class Message>
@@ -124,10 +131,49 @@ namespace icon::details
     Co_StreamWatcher& watcher_;
   };
 
+
+  template<
+    class Raw,
+    class Serializer
+  >
+  class Response
+  {
+  public:
+    Response(uint32_t msg_number, Raw&& raw)
+      : msg_number_{msg_number}
+      , raw_{std::move(raw)}
+    {}
+
+    operator bool() const
+    {
+      return raw_.empty();
+    }
+
+    template<class Message>
+    bool is() const
+    {
+      return Serializer::template extract_message_number<uint32_t, Message>() == msg_number_;
+    }
+
+    template<class Message>
+    Message get() const
+    {
+      return Serializer:: template deserialze<Raw, Message>(raw_);
+    }
+
+  private:
+    uint32_t msg_number_;
+    Raw raw_;
+  };
+
   class ZmqClient
   {
 
   public:
+    using Raw_t = zmq::message_t;
+    using RawBuffer_t = std::vector<Raw_t>;
+    using Response_t = Response<Raw_t, ProtobufSerializer>;
+
     ZmqClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
       : socket_{zctx, zmq::socket_type::dealer}
       , watcher_{socket_, bctx}
@@ -142,33 +188,25 @@ namespace icon::details
       socket_.connect(endpoint);
       spdlog::debug("ZmqClient: socket connected...");
 
-      auto zmq_recv_op = ZmqCoRecvOp{socket_, watcher_};
-      auto zmq_send_op = ZmqCoSendOp{socket_, watcher_};
+      spdlog::debug("ZmqClient: sending syn and waiting for response...");
+      const auto response = co_await send_async(icon::ConnectionEstablishReq{});
 
-      spdlog::debug("ZmqClient: sending syn...");
-      co_await send_connection_establish(zmq_send_op);
-      spdlog::debug("ZmqClient: syn sent");
+      process_connection_establish_response(response);
 
-      spdlog::debug("ZmqClient: waiting ack");
-      is_connected_= co_await recv_connection_establish(zmq_recv_op);
-      spdlog::debug("ZmqClient: ack received");
-  
       if (is_connected_) {
-        spdlog::debug("Received connection ack");
-      } else {
-        spdlog::debug("Received unknown");
+        spdlog::debug("Client connected");
       }
 
       co_return is_connected_;
     }
 
     template<class Message>
-    awaitable<void> send_async(Message&& message)
+    awaitable<Response_t> send_async(Message&& message)
     {
       //Build message
       auto msg_number = ProtobufSerializer::extract_message_number<uint32_t, Message>();
-      auto msg_raw =    ProtobufSerializer::serialize<zmq::message_t>(std::forward<Message>(message));
-      auto raw_buffer = std::vector<zmq::message_t>{};
+      auto msg_raw =    ProtobufSerializer::serialize<Raw_t>(std::forward<Message>(message));
+      auto raw_buffer = RawBuffer_t{};
       raw_buffer.emplace_back(std::to_string(msg_number));
       raw_buffer.emplace_back(std::move(msg_raw));
 
@@ -178,29 +216,35 @@ namespace icon::details
 
       //Recv
       auto zmq_recv_op = ZmqCoRecvOp{socket_, watcher_};
-      auto resp = co_await zmq_recv_op.async_receive<zmq::message_t>();
+      raw_buffer = co_await zmq_recv_op.async_receive<RawBuffer_t>();
 
-      spdlog::debug("Resp: {}", resp.to_string());
+      auto& recv_msg_number = raw_buffer[0];
+      auto& recv_msg_body = raw_buffer[1];
 
-      //prepare response
-      co_return;
+      co_return Response_t(
+          ProtobufSerializer::extract_message_number<uint32_t, Raw_t>(recv_msg_number),
+          std::move(recv_msg_body)
+        );;
     }
+
   private:
-    awaitable<void> send_connection_establish(ZmqCoSendOp& op)
+    void process_connection_establish_response(const Response_t& response)
     {
-      auto buffer = zmq::message_t(std::string{"syn"});
-      co_await op.async_send(std::move(buffer));
-    }
+      spdlog::debug("ZmqClient: process_connection_establish_response");
+      if (!response) {
+        spdlog::debug("Response invalid");
 
-    awaitable<bool> recv_connection_establish(ZmqCoRecvOp& op)
-    {
-      const auto buffer = co_await op.async_receive<zmq::message_t>();
-
-      if (buffer.to_string() == "ack") {
-        co_return true;
-      } else {
-        co_return false;
+        return;
       }
+
+      if (not response.is<icon::ConnectionEstablishCfm>()) {
+          spdlog::debug("Response invalid");
+
+          return;
+      }
+
+      // const auto& resp_msg = response.get<icon::ConnectionEstablishCfm>();
+      is_connected_ = true;
     }
 
   private:

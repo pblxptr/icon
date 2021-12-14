@@ -56,6 +56,19 @@ void server()
         auto& msg_number = recv_messages[1];
         auto& msg = recv_messages[2];
 
+        if (msg_number.to_string() == std::to_string(0x10000001)) {
+          auto resp = icon::ConnectionEstablishCfm{};
+          auto resp_buffer = std::vector<zmq::message_t>();
+          auto resp_msg_number = zmq::message_t{std::to_string(0x10000002)};
+          auto resp_msg_body = zmq::message_t{resp.ByteSizeLong()};
+          resp.SerializeToArray(resp_msg_body.data(), resp_msg_body.size());
+
+          resp_buffer.push_back(std::move(id));
+          resp_buffer.push_back(std::move(resp_msg_number));
+          resp_buffer.push_back(std::move(resp_msg_body));
+          zmq::send_multipart(socket, resp_buffer, zmq::send_flags::dontwait);
+        }
+
         spdlog::debug("Msg number: {}", msg_number.to_string());
       }
     }
@@ -77,7 +90,6 @@ void server()
 awaitable<void> client_run(icon::details::ZmqClient& client, const char* endpoint)
 {
   co_await client.connect_async(endpoint);
-  co_await client.send_async(icon::ConnectionEstablishReq{});
 
 }
 
