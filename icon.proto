@@ -2,7 +2,12 @@ syntax = "proto3";
 
 import "metadata.proto";
 
-package icon;
+package icon.transport;
+
+message Header
+{
+  uint32 message_number = 1;
+}
 
 message ConnectionEstablishReq
 {

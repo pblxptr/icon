@@ -57,7 +57,7 @@ void server()
         auto& msg = recv_messages[2];
 
         if (msg_number.to_string() == std::to_string(0x10000001)) {
-          auto resp = icon::ConnectionEstablishCfm{};
+          auto resp = icon::transport::ConnectionEstablishCfm{};
           auto resp_buffer = std::vector<zmq::message_t>();
           auto resp_msg_number = zmq::message_t{std::to_string(0x10000002)};
           auto resp_msg_body = zmq::message_t{resp.ByteSizeLong()};
