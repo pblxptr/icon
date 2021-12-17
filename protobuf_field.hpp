@@ -1,64 +1,63 @@
 #pragma once
 
 #include "icon.pb.h"
+#include <spdlog/spdlog.h>
 
 namespace icon::proto
 {
+template<class RawData>
+class ProtobufData
+{
+public:
+  explicit ProtobufData(RawData data)
+    : data_{std::move(data)}
+  {};
 
-template<class Message>
-auto get_message_number()
+  ProtobufData(const ProtobufData&) = delete;
+  ProtobufData& operator=(const ProtobufData&) = delete;
+  ProtobufData(ProtobufData&&) = default;
+  ProtobufData& operator=(ProtobufData&&) = default;
+
+  bool has_value() const
+  {
+    return data_.has_value();
+  }
+
+  const RawData& data() const
+  {
+    return *data_;
+  }
+
+  std::optional<RawData> data_;
+};
+
+template<class Message, class Body>
+uint32_t get_message_number(const ProtobufData<Body>& msg)
 {
   return Message::GetDescriptor()->options().GetExtension(icon::metadata::MESSAGE_NUMBER);
 }
 
 template<class Message>
-auto get_header_for_message()
+auto get_header_for_message(const ProtobufData<Message>& data)
 {
-  auto header = icon::transport::Header{};
-  header.set_message_number(get_message_number<Message>());
+  auto req = icon::transport::Header{};
+  req.set_message_number(get_message_number<Message>(data));
 
-  return header;
+  return ProtobufData<icon::transport::Header>{std::move(req)};
 }
 
-template<class BaseField, class Data>
-class ProtobufField : BaseField
-{
-public:
-  ProtobufField() {}
-  ProtobufField(Data data)
-    : data_{std::move(data)}
-  {};
-
-  ProtobufField(const ProtobufField&) = delete;
-  ProtobufField& operator=(const ProtobufField&) = delete;
-  ProtobufField(ProtobufField&&) = default;
-  ProtobufField& operator=(ProtobufField&&) = default;
-
-  bool has_value() const
-  {
-    return data_.has_value() && not (*data_).empty();
-  }
-
-  const Data& data() const
-  {
-    return *data_;
-  }
-
-  std::optional<Data> data_;
-};
-
-template<class Raw, class BaseField, class Source>
-Raw serialize(ProtobufField<BaseField, Source> field) requires (not std::is_same_v<Raw, Source>)
+template<class Destination, class Source>
+Destination serialize(ProtobufData<Source> field) requires (not std::is_same_v<Destination, Source>)
 {
   const auto& data = field.data();
-  auto raw = Raw{data.ByteSizeLong()};
-  data.SerializeToArray(raw.data(), raw.size());
+  auto dst = Destination{data.ByteSizeLong()};
+  data.SerializeToArray(dst.data(), dst.size());
 
-  return raw;
+  return dst;
 }
 
-template<class Destination, class BaseField, class Raw>
-Destination deserialize(const ProtobufField<BaseField, Raw>& field) requires (not std::is_same_v<Destination, Raw>)
+template<class Destination, class Source>
+Destination deserialize(const ProtobufData<Source>& field) requires (not std::is_same_v<Destination, Source>)
 {
   const auto& data = field.data();
   auto message = Destination{};

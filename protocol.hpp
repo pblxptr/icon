@@ -5,7 +5,7 @@
 
 #include "traits.hpp"
 
-namespace icon {
+namespace icon::details {
 
 namespace fields {
   struct Identity {};
@@ -13,11 +13,20 @@ namespace fields {
   struct Body {};
 }
 
-template<class Raw>
-Raw serialize();
+template<class T>
+concept Deserializable =
+requires (T a) {
+    deserialize<void>(a);
+};
 
-template<class Destination, class Source>
-Destination deserialize(const Source&);
+template<class T>
+concept Serializable =
+requires (T a) {
+    serialize<void>(a);
+};
+
+template<class T>
+concept Deserialized = (not Deserializable<T>);
 
 template<class... Fields>
 using DataLayout = std::tuple<Fields...>;
@@ -56,22 +65,22 @@ struct Parser
   Parser(Parser&&) = default;
   Parser& operator=(Parser&&) = default;
 
-  template<class Field, class FieldData> requires std::is_base_of_v<Field, std::decay_t<FieldData>>
-  FieldData get() &
+  template<class Field>
+  Raw get() &
   {
     constexpr auto index = icon::traits::IndexOf<std::decay_t<Field>, DataLayout>::value();
     auto raw = Raw{};
     raw.copy(buffer_[index]);
 
-    return FieldData{std::move(raw)};
+    return Raw{std::move(raw)};
   }
 
- template<class Field, class FieldData> requires std::is_base_of_v<Field, std::decay_t<FieldData>>
-  auto get() &&
+  template<class Field>
+  Raw get() &&
   {
-    constexpr auto index = icon::traits::IndexOf<std::decay_t<Field>, DataLayout>::value();
+     constexpr auto index = icon::traits::IndexOf<std::decay_t<Field>, DataLayout>::value();
 
-    return FieldData{Raw{std::move(buffer_[index])}};
+    return Raw{std::move(buffer_[index])};
   }
 
   template<class T>
@@ -80,14 +89,6 @@ struct Parser
     constexpr auto index = icon::traits::IndexOf<std::decay_t<T>, DataLayout>::value();
 
     buffer_[index] = std::move(raw);
-  }
-
-  template<class Field, class FieldData> requires std::is_base_of_v<Field, std::decay_t<FieldData>>
-  void set(FieldData&& data)
-  {
-    constexpr auto index = icon::traits::IndexOf<std::decay_t<Field>, DataLayout>::value();
-
-    buffer_[index] = serialize<Raw>(std::forward<FieldData>(data));
   }
 
   RawBuffer parse() &

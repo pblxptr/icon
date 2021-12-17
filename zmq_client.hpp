@@ -15,6 +15,7 @@
 #include "protobuf_field.hpp"
 #include "zmq_co_recv_op.hpp"
 #include "zmq_co_send_op.hpp"
+#include "data_types.hpp"
 
 namespace {
   using boost::asio::awaitable;
@@ -22,65 +23,39 @@ namespace {
 }
 namespace icon::details
 {
-  template<class Data>
-  class Response
-  {
-  public:
-    Response(uint32_t msg_number, Data&& data)
-      : msg_number_{msg_number}
-      , data_{std::move(data)}
-    {}
-
-    operator bool() const
-    {
-      return data_.has_value();
-    }
-
-    template<class Message>
-    bool is() const
-    {
-      return icon::proto::get_message_number<Message>() == msg_number_;
-    }
-
-    template<class Message>
-    Message get() const
-    {
-      return deserialize(data_);
-    }
-
-  private:
-    uint32_t msg_number_;
-    Data data_;
-  };
-
   class ZmqClient
   {
 
   public:
-    using Protocol_t = icon::Protocol<
+    using Protocol_t = Protocol<
       zmq::message_t,
       std::vector<zmq::message_t>,
-      icon::DataLayout<
-        icon::fields::Header,
-        icon::fields::Body
+      DataLayout<
+        fields::Header,
+        fields::Body
       >
     >;
-    using Response_t = Response<icon::proto::ProtobufField<icon::fields::Body, Protocol_t::Raw>>;
+    using Header_t = icon::transport::Header;
+    using RawProtobufData_ = icon::proto::ProtobufData<Protocol_t::Raw>;
+    using BasicResponse_t = BasicResponse<Header_t, RawProtobufData_>;
+    using InternalResponse_t = InternalResponse<Header_t, RawProtobufData_>;
 
     ZmqClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
       : socket_{zctx, zmq::socket_type::dealer}
       , watcher_{socket_, bctx}
     {
-      spdlog::debug("ZmqClient::ctor");
+      spdlog::debug("ZmqClient: ctor");
     }
 
     awaitable<bool> connect_async(const char* endpoint)
     {
+      if (is_connected_) {
+        co_return true;
+      }
+
       spdlog::debug("ZmqClient: connect_async");
       socket_.connect(endpoint);
-      const auto response = co_await send_async(icon::transport::ConnectionEstablishReq{});
-
-      process_connection_establish_response(response);
+      co_await init_connection_async();
 
       if (is_connected_) {
         spdlog::debug("Client connected");
@@ -89,45 +64,46 @@ namespace icon::details
       co_return is_connected_;
     }
 
-    template<MessageToSend Message>
-    awaitable<Response_t> send_async(Message&& message)
+    template<MessageToSend Message, class Response =  BasicResponse_t>
+    awaitable<Response> send_async(Message&& message)
     {
       spdlog::debug("ZmqClient: async_send");
-      // //prepare
-      auto header_field = icon::proto::ProtobufField<
-          icon::fields::Header,
-          icon::transport::Header
-        >{icon::proto::get_header_for_message<Message>()
-      };
 
-      auto body_field = icon::proto::ProtobufField<
-          icon::fields::Body,
-          Message
-        >{std::forward<Message>(message)
-      };
+      auto body = icon::proto::ProtobufData<Message>{std::forward<Message>(message)};
+      auto header = get_header_for_message<Message>(body);
 
       auto parser = Parser<Protocol_t>();
-      parser.set<icon::fields::Header>(std::move(header_field));
-      parser.set<icon::fields::Body>(std::move(body_field));
+      parser.set<fields::Header>(serialize<Protocol_t::Raw>(std::move(header)));
+      parser.set<fields::Body>(serialize<Protocol_t::Raw>(std::move(body)));
       auto raw = std::move(parser).parse();
 
       //send
       auto zmq_send_op = ZmqCoSendOp{socket_, watcher_};
       co_await zmq_send_op.async_send(std::move(raw));
 
-      // //recv
-      co_return co_await receive_async();
+      //receive
+      co_await receive_async<Response>();
     }
 
   private:
-    awaitable<Response_t> receive_async()
+    awaitable<void> init_connection_async()
+    {
+      const auto req = icon::transport::ConnectionEstablishReq{};
+      const auto response = co_await send_async<decltype(req), InternalResponse_t>(std::move(req));
+
+      if (not response.is<icon::transport::ConnectionEstablishCfm>()) {
+        spdlog::debug("Response does not contain a valid message");
+
+        co_return;
+      }
+
+      is_connected_ = true;
+    }
+
+    template<class Response>
+    awaitable<Response> receive_async()
     {
       spdlog::debug("ZmqClient: async_receive");
-
-      using icon::fields::Header;
-      using icon::fields::Body;
-      using HeaderFieldData_t = icon::proto::ProtobufField<Header, Protocol_t::Raw>;
-      using BodyFieldData_t   = icon::proto::ProtobufField<Body,   Protocol_t::Raw>;
 
       //recv
       auto zmq_recv_op = ZmqCoRecvOp{socket_, watcher_};
@@ -135,29 +111,13 @@ namespace icon::details
 
       //parse
       auto parser = Parser<Protocol_t>{std::move(raw_buffer)};
-      const auto header = deserialize<icon::transport::Header>(parser.get<Header, HeaderFieldData_t>());
+      auto header = icon::proto::ProtobufData(std::move(parser).get<fields::Header>());
+      auto body = icon::proto::ProtobufData(std::move(parser).get<fields::Body>());
 
-      co_return Response_t{
-        header.message_number(),
-        parser.get<Body, BodyFieldData_t>()
+      co_return Response{
+        deserialize<Header_t>(header),
+        std::move(body)
       };
-    }
-
-    void process_connection_establish_response(const Response_t& response)
-    {
-      spdlog::debug("ZmqClient: process_connection_establish_response");
-      if (!response) {
-        spdlog::debug("Response invalid");
-
-        return;
-      }
-
-      if (not response.is<icon::transport::ConnectionEstablishCfm>()) {
-          spdlog::debug("Response invalid");
-
-          return;
-      }
-      is_connected_ = true;
     }
 
   private:
