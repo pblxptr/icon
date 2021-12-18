@@ -1,206 +1,133 @@
-#include <boost/asio.hpp>
-#include <spdlog/spdlog.h>
-#include <thread>
-#include <vector>
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
-#include "stream_watcher.hpp"
-#include "flags.hpp"
+#include <boost/asio.hpp>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <spdlog/spdlog.h>
 #include <cassert>
-#include <sstream>
-#include <random>
-#include "zmq_recv_op.hpp"
-#include "zmq_send_op.hpp"
-#include "icon.hpp"
-#include <iostream>
+#include "co_stream_watcher.hpp"
+#include "zmq_client.hpp"
+#include "icon.pb.h"
+#include "protobuf_field.hpp"
+#include "protocol.hpp"
+#include "data_types.hpp"
 
-auto io_context = boost::asio::io_context{};
-auto zmq_context = zmq::context_t{};
+namespace posix = boost::asio::posix;
 
-constexpr auto ZmqClientEndpoint = "tcp://127.0.0.1:6667";
+using boost::asio::awaitable;
+using boost::asio::co_spawn;
+using boost::asio::use_awaitable;
+using boost::asio::detached;
+
 constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
 
-static constexpr size_t Messages = 2000;
-static constexpr size_t NumberOfClientThreads = 1;
+auto bctx = boost::asio::io_context{};
 
-static auto rd = std::random_device{};
+using Protocol_t = icon::details::Protocol<
+  zmq::message_t,
+  std::vector<zmq::message_t>,
+  icon::details::DataLayout<
+    icon::details::fields::Identity,
+    icon::details::fields::Header,
+    icon::details::fields::Body
+  >
+>;
 
-auto random_delay()
+auto build_request(Protocol_t::RawBuffer&& messages)
 {
-  static auto gen = std::mt19937{rd()};
-  static auto dist = std::uniform_int_distribution<>(0, 1000);
+  auto parser = icon::details::Parser<Protocol_t>{std::move(messages)};
+  
+  auto header = icon::proto::ProtobufData{std::move(parser).get<icon::details::fields::Header>()};
+  auto body = icon::proto::ProtobufData{std::move(parser).get<icon::details::fields::Body>()};
 
-  return dist(gen);
+  return icon::details::InternalRequest{
+    1,
+    icon::proto::deserialize<icon::transport::Header>(std::move(header)),
+    std::move(body)
+  };
 }
-
-struct CountMessagesHandler
-{
-  icon::details::ZmqRecvOp& recv_op;
-  icon::details::ZmqSendOp& send_op;
-  icon::details::StreamWatcher& watcher;
-  size_t msg {0};
-
-  void run()
-  {
-    wait_error();
-    wait_recv();
-  }
-
-  void wait_error()
-  {
-    watcher.async_wait_error([this]()
-    {
-      spdlog::debug("Wait error");
-
-      wait_error();
-    });
-  }
-
-  void wait_recv()
-  {
-    recv_op.async_receive([this](std::vector<zmq::message_t>&& m)
-    {
-      handle(std::move(m));
-    });
-  }
-
-  void handle(std::vector<zmq::message_t>&& parts)
-  {
-    // assert(parts.size() == 2);
-
-    msg++;
-
-    spdlog::debug("Number of messages: {}", msg);
-
-    // if (msg == Messages * NumberOfClientThreads)
-    // {
-    //   auto ss = std::stringstream{};
-    //   ss << "Messages received: " << Messages ;
-
-    //   throw std::runtime_error(ss.str());
-    // }
-
-    auto messages = std::vector<zmq::message_t>{};
-    for (auto&& m : parts) {
-      auto new_msg = zmq::message_t{};
-      new_msg.copy(m);
-      messages.push_back(std::move(new_msg));
-    }
-
-    auto send_ch = [this]() { wait_recv(); };
-    auto send_func = [this, p = std::move(messages), ch = std::move(send_ch), parts = std::move(parts)]() mutable
-    {
-      spdlog::debug("Sending message");
-      send_op.async_send(std::move(p), ch);
-    };
-
-    send_ch();
-    send_func();
-
-  }
-};
-
 
 void server()
 {
-  namespace posix = boost::asio::posix;
+  auto zctx = zmq::context_t{};
+  auto socket = zmq::socket_t{zctx, zmq::socket_type::router};
+  socket.bind(ZmqServerEndpoint);
 
-  auto start = std::chrono::system_clock::now();
+  while (1)
+  {
+    spdlog::debug("server loop");
+    auto recv_messages = std::vector<zmq::message_t>{};
+    auto nparts = zmq::recv_multipart(socket, std::back_inserter(recv_messages));
 
-  try {
-    auto local_ctx = zmq::context_t{};
+    spdlog::debug("Server: received");
 
-    auto socket = zmq::socket_t{local_ctx, zmq::socket_type::router};
-    socket.bind(ZmqServerEndpoint);
+    if (!nparts) {
+      continue;
+    }
 
-    auto watcher = icon::details::StreamWatcher{socket, io_context};
-    auto zmq_recv_op = icon::details::ZmqRecvOp{socket, watcher};
-    auto zmq_send_op = icon::details::ZmqSendOp{socket, watcher};
-    auto counter = CountMessagesHandler{zmq_recv_op, zmq_send_op, watcher};
-    counter.run();
-  
-    using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-    work_guard_type work_guard(io_context.get_executor());
-    io_context.run();
+    auto request = build_request(std::move(recv_messages));
+    if (not request.is<icon::transport::ConnectionEstablishReq>()) {
+      spdlog::debug("Received invalid con req messaege");
 
-  } catch(const std::exception& e) {
-    auto end = std::chrono::system_clock::now();
-    std::chrono::duration<double> diff = end - start;
+      continue;
+    }
 
-    std::cout << "Exception: " << e.what() << "\n";
-    std::cout << "Time to pass: " << Messages * NumberOfClientThreads << " messages over the system: " << diff.count() << "s\n";
+    spdlog::debug("Ok!!");
+
+    // if (header.message_number() == icon::proto::get_message_number<icon::transport::ConnectionEstablishReq>()) {
+    //   spdlog::debug("Connection establish");
+    //   header.set_message_number(icon::proto::get_message_number<icon::transport::ConnectionEstablishCfm>());
+    //   parser.set<icon::details::fields::Header>(icon::proto::serialize<Protocol_t::Raw>(icon::proto::ProtobufData(std::move(header))));
+    //   parser.set<icon::details::fields::Body>(icon::proto::serialize<Protocol_t::Raw>(icon::proto::ProtobufData(icon::transport::ConnectionEstablishCfm{})));
+
+    //   const auto nparts = zmq::send_multipart(socket, std::move(parser).parse());
+    //   spdlog::debug("Parts sent: {}", nparts.value_or(0));
+
+    // } else {
+    //   spdlog::debug("Invalid message");
+    // }
   }
+
+
+  // using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+  // work_guard_type work_guard(bctx.get_executor());
+
+
+  // bctx.run();
+}
+
+awaitable<void> client_run(icon::details::ZmqClient& client, const char* endpoint)
+{
+  co_await client.connect_async(endpoint);
+  co_await client.connect_async(endpoint);
+  spdlog::debug("Test");
 
 }
 
-void client()
+void client(const char* endpoint)
 {
-  spdlog::info("client: started-wait");
+  auto local_bctx = boost::asio::io_context{};
+  auto zctx = zmq::context_t{};
+  auto client = icon::details::ZmqClient{zctx, local_bctx};
+
   std::this_thread::sleep_for(std::chrono::seconds(5));
-  spdlog::info("client: ready");
 
-  auto counter = static_cast<uint32_t>(0);
-  auto local_ctx = zmq::context_t{};
-  auto socket = zmq::socket_t{local_ctx, zmq::socket_type::dealer};
-
-  auto send_msg = [&socket](const std::string& value_to_send)
-  {
-    auto events = socket.get(zmq::sockopt::events);
-    do {
-      events = socket.get(zmq::sockopt::events);
-    } while (!(events & ZMQ_POLLOUT));
-
-    auto message = zmq::message_t{value_to_send};
-    const auto ret = socket.send(message, zmq::send_flags::dontwait);
-  };
-
-  socket.connect(ZmqClientEndpoint);
-  spdlog::info("Client connected");
-
-  std::this_thread::sleep_for(std::chrono::seconds(4));
-
-  while(true) {
-    auto value_to_send = std::to_string(counter);
-    send_msg(value_to_send);
-
-    spdlog::info("Client sent a message");
-    spdlog::info("Client is waiting for a message");
-    // auto msg = zmq::message_t{};
-    // const auto ret = socket.recv(msg);
-    // spdlog::info("Client received a message");
+  co_spawn(local_bctx, client_run(client, endpoint), detached);
+  spdlog::debug("after spawn");
 
 
-    // assert(msg.to_string() == value_to_send);
-
-    counter++;
-    if (counter == Messages) {
-      break;
-    }
-  }
-
-  spdlog::debug("Client finished");
-
-  // while(1) {}
+  using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+  work_guard_type work_guard(local_bctx.get_executor());
+  local_bctx.run();
 }
 
 int main()
 {
-  boost::asio::posix::stream_descriptor s{io_context};
-  
-
-
   spdlog::set_level(spdlog::level::debug);
 
-  auto th_server = std::thread(server);
-  auto threads = std::vector<std::thread>{};
+  auto server_th = std::thread(server);
+  auto client1_th = std::thread(client, ZmqServerEndpoint);
 
-  for (size_t i = 0; i < NumberOfClientThreads; i++) {
-    threads.push_back(std::thread(client));
-  }
-  
-  for (auto& th : threads) {
-    th.join();
-  }
-
-  th_server.join();
+  server_th.join();
+  client1_th.join();
 }

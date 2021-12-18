@@ -18,7 +18,7 @@ namespace icon::details {
   using Message_t = zmq::message_t;
   using RegularMessage_t = Message_t;
   using MultipartDynamicMessage_t = std::vector<Message_t>;
-  
+
   template<class Message>
   concept RegularMessage = std::is_same_v<Message, RegularMessage_t>;
 

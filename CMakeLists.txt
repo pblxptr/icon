@@ -10,7 +10,7 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS metadata.proto icon.proto)
 set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCES
-  co_main3.cpp
+  main.cpp
 )
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
