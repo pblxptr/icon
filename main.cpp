@@ -11,6 +11,7 @@
 #include "protobuf_field.hpp"
 #include "protocol.hpp"
 #include "data_types.hpp"
+#include "endpoint_ctx.hpp"
 
 namespace posix = boost::asio::posix;
 
@@ -23,54 +24,60 @@ constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
 
 auto bctx = boost::asio::io_context{};
 
-using Protocol_t = icon::details::Protocol<
-  zmq::message_t,
-  std::vector<zmq::message_t>,
-  icon::details::DataLayout<
-    icon::details::fields::Identity,
-    icon::details::fields::Header,
-    icon::details::fields::Body
-  >
->;
+// auto build_request(Protocol_t::RawBuffer&& messages)
+// {
+//   auto parser = icon::details::Parser<Protocol_t>{std::move(messages)};
+//   auto header = icon::proto::ProtobufData{std::move(parser).get<icon::details::fields::Header>()};
+//   auto body = icon::proto::ProtobufData{std::move(parser).get<icon::details::fields::Body>()};
 
-auto build_request(Protocol_t::RawBuffer&& messages)
-{
-  auto parser = icon::details::Parser<Protocol_t>{std::move(messages)};
-  
-  auto header = icon::proto::ProtobufData{std::move(parser).get<icon::details::fields::Header>()};
-  auto body = icon::proto::ProtobufData{std::move(parser).get<icon::details::fields::Body>()};
-
-  return icon::details::InternalRequest{
-    1,
-    icon::proto::deserialize<icon::transport::Header>(std::move(header)),
-    std::move(body)
-  };
-}
+//   return icon::details::InternalRequest{
+//     1,
+//     icon::proto::deserialize<icon::transport::Header>(std::move(header)),
+//     std::move(body)
+//   };
+// }
 
 void server()
 {
-  auto zctx = zmq::context_t{};
-  auto socket = zmq::socket_t{zctx, zmq::socket_type::router};
-  socket.bind(ZmqServerEndpoint);
+  using namespace icon::details;
+  using namespace icon::transport;
 
-  while (1)
-  {
-    spdlog::debug("server loop");
-    auto recv_messages = std::vector<zmq::message_t>{};
-    auto nparts = zmq::recv_multipart(socket, std::back_inserter(recv_messages));
+  auto context = icon::api::setup_stateless_endpoint(
+    icon::api::address("tcp://localhost:5343"),
+    icon::api::consumer<ConnectionEstablishReq>(
+      [](MessageContext<ConnectionEstablishReq> req) { spdlog::debug("ConnectionEstablishReq"); }
+    ),
+    icon::api::consumer<HeartbeatReq>(
+      [](MessageContext<HeartbeatReq> req) { spdlog::debug("HeartbeatReq"); }
+    )
+  )
+  .build();
 
-    spdlog::debug("Server: received");
+  context->run();
 
-    if (!nparts) {
-      continue;
-    }
 
-    auto request = build_request(std::move(recv_messages));
-    if (not request.is<icon::transport::ConnectionEstablishReq>()) {
-      spdlog::debug("Received invalid con req messaege");
+  // auto zctx = zmq::context_t{};
+  // auto socket = zmq::socket_t{zctx, zmq::socket_type::router};
+  // socket.bind(ZmqServerEndpoint);
 
-      continue;
-    }
+  // while (1)
+  // {
+  //   spdlog::debug("server loop");
+  //   auto recv_messages = std::vector<zmq::message_t>{};
+  //   auto nparts = zmq::recv_multipart(socket, std::back_inserter(recv_messages));
+
+  //   spdlog::debug("Server: received");
+
+  //   if (!nparts) {
+  //     continue;
+  //   }
+
+  //   auto request = build_request(std::move(recv_messages));
+  //   if (not request.is<icon::transport::ConnectionEstablishReq>()) {
+  //     spdlog::debug("Received invalid con req messaege");
+
+  //     continue;
+  //   }
 
     spdlog::debug("Ok!!");
 

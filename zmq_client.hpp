@@ -36,9 +36,10 @@ namespace icon::details
       >
     >;
     using Header_t = icon::transport::Header;
-    using RawProtobufData_ = icon::proto::ProtobufData<Protocol_t::Raw>;
-    using BasicResponse_t = BasicResponse<Header_t, RawProtobufData_>;
-    using InternalResponse_t = InternalResponse<Header_t, RawProtobufData_>;
+    template<class T>
+    using DataType           = icon::proto::ProtobufData<T>;
+    using BasicResponse_t    = BasicResponse   <Header_t,  DataType<Protocol_t::Raw>>;
+    using InternalResponse_t = InternalResponse<Header_t,  DataType<Protocol_t::Raw>>;
 
     ZmqClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
       : socket_{zctx, zmq::socket_type::dealer}

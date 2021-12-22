@@ -67,7 +67,7 @@ namespace icon::details {
     }
 
     template<class Message>
-    Message get()
+    Message get_body()
     {
       return Body_t::template get<Message>(Header_t::msg_number());
     }

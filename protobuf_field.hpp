@@ -2,6 +2,7 @@
 
 #include "icon.pb.h"
 #include <spdlog/spdlog.h>
+#include "protocol.hpp"
 
 namespace icon::proto
 {
@@ -9,6 +10,7 @@ template<class RawData>
 class ProtobufData
 {
 public:
+  ProtobufData() = default;
   explicit ProtobufData(RawData data)
     : data_{std::move(data)}
   {};
