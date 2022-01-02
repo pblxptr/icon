@@ -12,10 +12,12 @@
 
 namespace posix = boost::asio::posix;
 
-using boost::asio::awaitable;
-using boost::asio::co_spawn;
-using boost::asio::use_awaitable;
-using boost::asio::detached;
+namespace {
+  using boost::asio::awaitable;
+  using boost::asio::co_spawn;
+  using boost::asio::use_awaitable;
+  using boost::asio::detached;
+}
 
 namespace icon::details {
 class Co_StreamWatcher

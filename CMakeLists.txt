@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCES
   main.cpp
+  context.cpp
 )
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
