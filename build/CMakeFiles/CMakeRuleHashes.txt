@@ -1,3 +1,0 @@
-# Hashes of file build rules.
-33b14d6cbef716f7c982f9465006a7d0 icon.pb.h
-22ed49207904500571aa9c353da5ba0f metadata.pb.h
