@@ -35,7 +35,7 @@ namespace {
     return Request{
       icon::details::core::Identity{std::move(identity)},
       icon::details::core::Header{header.message_number()},
-      icon::details::core::Body{std::move(body)}
+      icon::details::core::DeserializableBody{std::move(body)}
     };
   }
   template<
@@ -54,8 +54,7 @@ namespace {
   }
 }
 namespace icon::details {
-
-
+  
 class BasicEndpoint : public BaseEndpoint
 {
 public:

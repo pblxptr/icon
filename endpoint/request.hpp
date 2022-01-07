@@ -13,7 +13,7 @@ namespace icon::details
     InternalRequest(
       core::Identity&& identity,
       core::Header&& header,
-      core::Body<Payload>&& body
+      core::DeserializableBody<Payload>&& body
     )
     : identity_{std::move(identity)}
     , header_{std::move(header)}
@@ -32,14 +32,25 @@ namespace icon::details
     }
 
     template<class Message>
+    bool is()
+    {
+      return body_.template message_number_match_for<Message>(header_.message_number());
+    }
+
+    template<class Message>
     Message body()
     {
-      return body_.template extract_with_message_number<Message>(header_.message_number());
+      if (!is<Message>()) //TODO: Code duplication with Response
+      {
+        throw std::runtime_error("Cannot deserialize");
+      }
+
+      return body_.template deserialize<Message>();
     }
 
   private:
     core::Identity identity_;
     core::Header header_;
-    core::Body<Payload> body_;
+    core::DeserializableBody<Payload> body_;
   };
 }

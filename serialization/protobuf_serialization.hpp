@@ -48,6 +48,12 @@ public:
   ProtobufRawMessage(ProtobufRawMessage&&) = default;
   ProtobufRawMessage& operator=(ProtobufRawMessage&&) = default;
 
+template<class Message>
+bool message_number_match_for(const size_t message_number) const
+{
+  return ProtobufMessage<Message>::message_number() == message_number;
+}
+
 template<class Destination>
 Destination deserialize() const
 {
@@ -55,18 +61,6 @@ Destination deserialize() const
   dst.ParseFromArray(raw_message_.data(), raw_message_.size());
 
   return dst;
-}
-
-template<class Destination>
-Destination deserialize_safe(size_t message_number) const
-{
-  auto raw_message_number = ProtobufMessage<Destination>::message_number();
-
-  if (raw_message_number != message_number) {
-    throw std::runtime_error("Raw message's number does match to provided message number");
-  }
-
-  return deserialize<Destination>();
 }
 
 private:

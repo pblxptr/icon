@@ -11,6 +11,8 @@
 #include <serialization/protobuf_serialization.hpp>
 #include <core/protocol.hpp>
 #include <endpoint/endpoint_config.hpp>
+#include <client/basic_client.hpp>
+
 
 namespace posix = boost::asio::posix;
 
@@ -44,13 +46,6 @@ void server()
   ctx.run();
 }
 
-// awaitable<void> client_run(icon::details::ZmqClient& client, const char* endpoint)
-// {
-//   co_await client.connect_async(endpoint);
-//   co_await client.connect_async(endpoint);
-//   spdlog::debug("Test");
-// }
-
 template<class Message>
 auto make_message()
 {
@@ -69,22 +64,35 @@ auto make_message()
 
 void client(const char* endpoint)
 {
-  auto message_protobuf = icon::details::serialization::protobuf::ProtobufMessage<icon::transport::ConnectionEstablishReq>{{}};
-
+  auto bctx = boost::asio::io_context{};
   auto zctx = zmq::context_t{};
-  auto socket = zmq::socket_t{zctx, zmq::socket_type::dealer};
+
+  auto client = icon::details::BasicClient{zctx, bctx};
+
+  co_spawn(bctx, client.async_connect(ZmqServerEndpoint), detached);
+
+  using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+  work_guard_type work_guard(bctx.get_executor());
+  bctx.run();
+
+
+
+  // auto message_protobuf = icon::details::serialization::protobuf::ProtobufMessage<icon::transport::ConnectionEstablishReq>{{}};
+
+  // auto zctx = zmq::context_t{};
+  // auto socket = zmq::socket_t{zctx, zmq::socket_type::dealer};
   
-  socket.connect(ZmqServerEndpoint);
-  spdlog::debug("Connected");
+  // socket.connect(ZmqServerEndpoint);
+  // spdlog::debug("Connected");
 
-  std::this_thread::sleep_for(std::chrono::seconds(3));
+  // std::this_thread::sleep_for(std::chrono::seconds(3));
 
-  while(1)
-  {
-    zmq::send_multipart(socket, make_message<icon::transport::ConnectionEstablishReq>());
-    spdlog::debug("Sent connection establish req");
-    // std::this_thread::sleep_for(std::chrono::seconds(2));
-  }
+  // while(1)
+  // {
+  //   zmq::send_multipart(socket, make_message<icon::transport::ConnectionEstablishReq>());
+  //   spdlog::debug("Sent connection establish req");
+  //   // std::this_thread::sleep_for(std::chrono::seconds(2));
+  // }
 }
 
 int main()
