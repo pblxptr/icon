@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/zmq_boost.dir/main.cpp.o CMakeFiles/zmq_boost.dir/utils/context.cpp.o CMakeFiles/zmq_boost.dir/metadata.pb.cc.o CMakeFiles/zmq_boost.dir/icon.pb.cc.o -o zmq_boost  -lpthread -lzmq -lzmqpp -lfmt /usr/lib/x86_64-linux-gnu/libprotobuf.so -lpthread 

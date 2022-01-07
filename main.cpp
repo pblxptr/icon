@@ -5,13 +5,12 @@
 #include <boost/asio/co_spawn.hpp>
 #include <spdlog/spdlog.h>
 #include <cassert>
-#include "co_stream_watcher.hpp"
-#include "zmq_client.hpp"
+#include <bzmq/co_stream_watcher.hpp>
+#include <client/zmq_client.hpp>
 #include "icon.pb.h"
-#include "protobuf_serialization.hpp"
-#include "protocol.hpp"
-#include "data_types.hpp"
-#include "endpoint_config.hpp"
+#include <serialization/protobuf_serialization.hpp>
+#include <core/protocol.hpp>
+#include <endpoint/endpoint_config.hpp>
 
 namespace posix = boost::asio::posix;
 
@@ -98,3 +97,4 @@ int main()
   server_th.join();
   client1_th.join();
 }
+

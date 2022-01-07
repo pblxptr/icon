@@ -1,0 +1,3 @@
+/home/eblxptr/GitSources/icon/build/CMakeFiles/edit_cache.dir
+/home/eblxptr/GitSources/icon/build/CMakeFiles/rebuild_cache.dir
+/home/eblxptr/GitSources/icon/build/CMakeFiles/zmq_boost.dir
