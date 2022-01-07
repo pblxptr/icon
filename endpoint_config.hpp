@@ -1,15 +1,15 @@
 #pragma once
 
 #include "protocol.hpp"
-#include "endpoint_builder.hpp"
 #include "data_types.hpp"
+#include "basic_endpoint.hpp"
 
 namespace icon::details {
 template<class Message, class Consumer>
 struct add_consumer_config
 {
-  template<class Endpoint>
-  void operator()(EndpointBuilder<Endpoint>& builder)
+  template<class Builder>
+  void operator()(Builder& builder)
   {
     builder.template add_consumer<Message>(std::move(c));
   }
@@ -18,8 +18,8 @@ struct add_consumer_config
 
 struct add_address_config
 {
-  template<class Endpoint>
-  void operator()(EndpointBuilder<Endpoint>& builder)
+  template<class Builder>
+  void operator()(Builder& builder)
   {
     builder.add_address(std::move(address));
   }
@@ -31,7 +31,7 @@ namespace icon::api {
 template<class... Config>
 auto setup_default_endpoint(Config&&... configs)
 {
-  auto builder = icon::details::EndpointBuilder<icon::details::BasicEndpoint>{};
+  auto builder = icon::details::BasicEndpointBuilder{};
 
   (configs(builder), ...);
 

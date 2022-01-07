@@ -21,14 +21,14 @@ namespace icon::details {
     Body body_;
   };
 
-  template<Deserializable Body>
+  template<Deserializable Payload>
   class InternalRequest
   {
   public:
     InternalRequest(
       fields2::Identity&& identity,
       fields2::Header&& header,
-      Body&& body
+      fields2::Body<Payload>&& body
     )
     : identity_{std::move(identity)}
     , header_{std::move(header)}
@@ -46,15 +46,16 @@ namespace icon::details {
       return header_;
     }
 
-    const Body& body() const
+    template<class Message>
+    Message body()
     {
-      return body_;
+      return body_.template extract_with_message_number<Message>(header_.message_number());
     }
 
   private:
     fields2::Identity identity_;
     fields2::Header header_;
-    Body body_;
+    fields2::Body<Payload> body_;
   };
 
 }

@@ -21,28 +21,13 @@ using boost::asio::use_awaitable;
 using boost::asio::detached;
 
 constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
-
-auto bctx = boost::asio::io_context{};
-
-// auto build_request(Protocol_t::RawBuffer&& messages)
-// {
-//   auto parser = icon::details::Parser<Protocol_t>{std::move(messages)};
-//   auto header = icon::details::serialization::ProtobufData{std::move(parser).get<icon::details::fields::Header>()};
-//   auto body = icon::details::serialization::ProtobufData{std::move(parser).get<icon::details::fields::Body>()};
-
-//   return icon::details::InternalRequest{
-//     1,
-//     icon::details::serialization::deserialize<icon::transport::Header>(std::move(header)),
-//     std::move(body)
-//   };
-// }
-
 void server()
 {
   using namespace icon::details;
   using namespace icon::transport;
-  auto endpoint = icon::api::setup_default_endpoint(
-    icon::api::address("tcp://localhost:5343"),
+
+   auto endpoint = icon::api::setup_default_endpoint(
+    icon::api::address(ZmqServerEndpoint),
     icon::api::consumer<ConnectionEstablishReq>(
       [](MessageContext<ConnectionEstablishReq> req) { spdlog::debug("ConnectionEstablishReq"); }
     ),
@@ -52,54 +37,12 @@ void server()
   )
   .build();
 
-  endpoint->run();
+  co_spawn(context::boost(), endpoint->run(), detached);
 
-
-  // auto zctx = zmq::context_t{};
-  // auto socket = zmq::socket_t{zctx, zmq::socket_type::router};
-  // socket.bind(ZmqServerEndpoint);
-
-  // while (1)
-  // {
-  //   spdlog::debug("server loop");
-  //   auto recv_messages = std::vector<zmq::message_t>{};
-  //   auto nparts = zmq::recv_multipart(socket, std::back_inserter(recv_messages));
-
-  //   spdlog::debug("Server: received");
-
-  //   if (!nparts) {
-  //     continue;
-  //   }
-
-  //   auto request = build_request(std::move(recv_messages));
-  //   if (not request.is<icon::transport::ConnectionEstablishReq>()) {
-  //     spdlog::debug("Received invalid con req messaege");
-
-  //     continue;
-  //   }
-
-    spdlog::debug("Ok!!");
-
-    // if (header.message_number() == icon::details::serialization::get_message_number<icon::transport::ConnectionEstablishReq>()) {
-    //   spdlog::debug("Connection establish");
-    //   header.set_message_number(icon::details::serialization::get_message_number<icon::transport::ConnectionEstablishCfm>());
-    //   parser.set<icon::details::fields::Header>(icon::details::serialization::serialize<Protocol_t::Raw>(icon::details::serialization::ProtobufData(std::move(header))));
-    //   parser.set<icon::details::fields::Body>(icon::details::serialization::serialize<Protocol_t::Raw>(icon::details::serialization::ProtobufData(icon::transport::ConnectionEstablishCfm{})));
-
-    //   const auto nparts = zmq::send_multipart(socket, std::move(parser).parse());
-    //   spdlog::debug("Parts sent: {}", nparts.value_or(0));
-
-    // } else {
-    //   spdlog::debug("Invalid message");
-    // }
-  // }
-
-
-  // using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-  // work_guard_type work_guard(bctx.get_executor());
-
-
-  // bctx.run();
+  auto& ctx = context::boost();
+  using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+  work_guard_type work_guard(ctx.get_executor());
+  ctx.run();
 }
 
 // awaitable<void> client_run(icon::details::ZmqClient& client, const char* endpoint)
@@ -109,21 +52,40 @@ void server()
 //   spdlog::debug("Test");
 // }
 
+template<class Message>
+auto make_message()
+{
+  auto message_protobuf = icon::details::serialization::protobuf::ProtobufMessage<Message>{{}};
+  auto header = icon::transport::Header{};
+  header.set_message_number(message_protobuf.message_number());
+  auto header_protobuf = icon::details::serialization::protobuf::ProtobufMessage<icon::transport::Header>{header};
+ 
+
+  auto parts = std::vector<zmq::message_t>{};
+  parts.push_back(header_protobuf.serialize());
+  parts.push_back(message_protobuf.serialize());
+
+  return parts;
+}
+
 void client(const char* endpoint)
 {
-  // auto local_bctx = boost::asio::io_context{};
-  // auto zctx = zmq::context_t{};
-  // auto client = icon::details::ZmqClient{zctx, local_bctx};
+  auto message_protobuf = icon::details::serialization::protobuf::ProtobufMessage<icon::transport::ConnectionEstablishReq>{{}};
 
-  // std::this_thread::sleep_for(std::chrono::seconds(5));
+  auto zctx = zmq::context_t{};
+  auto socket = zmq::socket_t{zctx, zmq::socket_type::dealer};
+  
+  socket.connect(ZmqServerEndpoint);
+  spdlog::debug("Connected");
 
-  // co_spawn(local_bctx, client_run(client, endpoint), detached);
-  // spdlog::debug("after spawn");
+  std::this_thread::sleep_for(std::chrono::seconds(3));
 
-
-  // using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-  // work_guard_type work_guard(local_bctx.get_executor());
-  // local_bctx.run();
+  while(1)
+  {
+    zmq::send_multipart(socket, make_message<icon::transport::ConnectionEstablishReq>());
+    spdlog::debug("Sent connection establish req");
+    // std::this_thread::sleep_for(std::chrono::seconds(2));
+  }
 }
 
 int main()

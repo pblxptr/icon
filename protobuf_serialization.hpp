@@ -9,88 +9,74 @@ namespace {
   using TransportHeader_t = icon::transport::Header;
 }
 
-namespace icon::details::serialization
+namespace icon::details::serialization::protobuf
 {
-template<class RawData>
-class ProtobufData
+template<class Message>
+class ProtobufMessage
 {
 public:
-  ProtobufData() = default;
-  explicit ProtobufData(RawData data)
-    : data_{std::move(data)}
-  {};
+  ProtobufMessage(Message message)
+    : message_{std::move(message)}
+  {}
 
-  ProtobufData(const ProtobufData&) = delete;
-  ProtobufData& operator=(const ProtobufData&) = delete;
-  ProtobufData(ProtobufData&&) = default;
-  ProtobufData& operator=(ProtobufData&&) = default;
+  ProtobufMessage(const ProtobufMessage&) = delete;
+  ProtobufMessage& operator=(const ProtobufMessage&) = delete;
+  ProtobufMessage(ProtobufMessage&&) = default;
+  ProtobufMessage& operator=(ProtobufMessage&&) = default;
 
-  bool has_value() const
+  static size_t message_number()
   {
-    return data_.has_value();
+    return Message::GetDescriptor()->options().GetExtension(icon::metadata::MESSAGE_NUMBER);
   }
 
-  const RawData& data() const
+  zmq::message_t serialize() const
   {
-    return *data_;
+    auto serialized = zmq::message_t{message_.ByteSizeLong()};
+    message_.SerializeToArray(serialized.data(), serialized.size());
+
+    return serialized;
   }
 
-  std::optional<RawData> data_;
+private:
+  Message message_;
 };
 
-template<class Message, class Body>
-uint32_t get_message_number(const ProtobufData<Body>& msg)
+class ProtobufRawMessage
 {
-  return Message::GetDescriptor()->options().GetExtension(icon::metadata::MESSAGE_NUMBER);
-}
+public:
+  explicit ProtobufRawMessage(zmq::message_t raw_message)
+    : raw_message_{std::move(raw_message)}
+  {}
 
-template<class Message>
-auto get_header_for_message(const ProtobufData<Message>& data)
+  ProtobufRawMessage(const ProtobufRawMessage&) = delete;
+  ProtobufRawMessage& operator=(const ProtobufRawMessage&) = delete;
+  ProtobufRawMessage(ProtobufRawMessage&&) = default;
+  ProtobufRawMessage& operator=(ProtobufRawMessage&&) = default;
+
+template<class Destination>
+Destination deserialize() const
 {
-  auto req = icon::transport::Header{};
-  req.set_message_number(get_message_number<Message>(data));
-
-  return ProtobufData<icon::transport::Header>{std::move(req)};
-}
-
-template<class Destination, class Source>
-Destination serialize(const ProtobufData<Source>& field) requires (not std::is_same_v<Destination, Source>)
-{
-  const auto& data = field.data();
-  auto dst = Destination{data.ByteSizeLong()};
-  data.SerializeToArray(dst.data(), dst.size());
+  auto dst = Destination{};
+  dst.ParseFromArray(raw_message_.data(), raw_message_.size());
 
   return dst;
 }
 
 template<class Destination>
-Destination serialize(const ProtobufData<DomainHeader_t>& header_field)
+Destination deserialize_safe(size_t message_number) const
 {
-  const auto& header = header_field.data();
-  auto proto_header = TransportHeader_t{};
-  proto_header.set_message_number(header.message_number());
+  auto raw_message_number = ProtobufMessage<Destination>::message_number();
 
-  return serialize<Destination>(ProtobufData{std::move(proto_header)});
+  if (raw_message_number != message_number) {
+    throw std::runtime_error("Raw message's number does match to provided message number");
+  }
+
+  return deserialize<Destination>();
 }
 
-template<class Destination, class Source>
-Destination deserialize(const ProtobufData<Source>& field) requires (not std::is_same_v<Destination, DomainHeader_t>)
-{
-  const auto& src = field.data();
-  auto dst = Destination{};
-  dst.ParseFromArray(src.data(), src.size());
-
-  return dst;
-}
-
-template<class Destination, class Source>
-Destination deserialize(const ProtobufData<Source>& field) requires std::is_same_v<Destination, DomainHeader_t>
-{
-  auto proto_header = deserialize<TransportHeader_t>(field);
-    
-  return DomainHeader_t{proto_header.message_number()};
-}
-
+private:
+  zmq::message_t raw_message_;
+};
 }
 
 

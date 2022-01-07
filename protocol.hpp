@@ -4,7 +4,6 @@
 #include <zmq.hpp>
 
 #include "traits.hpp"
-
 namespace icon::details {
 
 namespace fields2
@@ -49,10 +48,11 @@ namespace fields2
     {}
 
     template<class Message>
-    auto get()
+    auto extract_with_message_number(size_t message_number)
     {
-      return deserialze<Message>(data_);
+      return data_.template deserialize_safe<Message>(message_number);
     }
+
 
   private:
     Data data_;
@@ -65,20 +65,36 @@ namespace fields {
   struct Body {};
 }
 
+// template<class T>
+// concept Deserializable =
+// requires (T a) {
+//     deserialize<void>(a);
+// };
+
+// template<class T>
+// concept Serializable =
+// requires (T a) {
+//     serialize<void>(a);
+// };
+
+// template<class T>
+// concept Deserialized = (not Deserializable<T>);
+
 template<class T>
 concept Deserializable =
 requires (T a) {
-    deserialize<void>(a);
+    a.template deserialize<void>();
 };
 
 template<class T>
 concept Serializable =
 requires (T a) {
-    serialize<void>(a);
+    a.serialize();
 };
 
-template<class T>
-concept Deserialized = (not Deserializable<T>);
+// template<class T>
+// concept Deserialized = (not Deserializable<T>);
+
 
 template<class... Fields>
 struct DataLayout
