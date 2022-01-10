@@ -91,20 +91,19 @@ private:
   awaitable<Response> async_send_with_response(Message&& message)
   {
     auto header = core::Header{MessageData_t<Message>::message_number()};
-    auto body = core::SerializableBody{MessageData_t{std::forward<Message>(message)}};
 
-    co_await async_do_send(std::move(header), std::move(body));
+    co_await async_do_send(std::move(header), std::forward<Message>(message));
     co_return co_await async_receive<Response>();
   }
 
-  template<class T>
-  awaitable<void> async_do_send(core::Header&& header, core::SerializableBody<T>&& body)
+  template<class Message>
+  awaitable<void> async_do_send(core::Header&& header, Message&& message)
   {
     auto zmq_send_op = ZmqCoSendOp{socket_, watcher_};
     co_await zmq_send_op.async_send(
         build_raw_buffer(
           MessageData_t{convert_header(header)},
-          std::move(body)
+          MessageData_t{std::move(message)}
     ));
   }
 
