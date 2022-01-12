@@ -13,10 +13,8 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
 
 set(CMAKE_CXX_STANDARD 20)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  # set(CMAKE_CXX_FLAGS "-fcoroutines")
-else()
-  #Workaround for clang, Boost asio has relased coroutines without full supported clang
+#Workaround for clang, Boost asio has relased coroutines without fully supported clang
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
   set(CMAKE_CXX_FLAGS "-std=c++20")
 endif()
