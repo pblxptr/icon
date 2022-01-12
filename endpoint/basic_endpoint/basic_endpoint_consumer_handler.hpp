@@ -1,15 +1,15 @@
 #pragma once 
 
-#include "../consumer_handler.hpp"
-
-namespace icon::details 
+#include <endpoint/consumer_handler.hpp>
+#include <endpoint/message_context.hpp>
+namespace icon::details
 {
   template<
     class Endpoint,
     class Request,
     class Message,
     class Consumer
-  > 
+  >
   class BasicEndpointConsumerHandler : public ConsumerHandler<Endpoint, Request>
   {
   public:

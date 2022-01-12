@@ -83,7 +83,7 @@ public:
  * @return Returns true if message number matches to Message type, false if not
  */
 template<>
-bool ProtobufDeserializable::message_number_match_for<core::Header>(const size_t message_number) const
+inline bool ProtobufDeserializable::message_number_match_for<core::Header>(const size_t message_number) const
 {
   return false;
 }
@@ -94,7 +94,7 @@ bool ProtobufDeserializable::message_number_match_for<core::Header>(const size_t
  * @tparam  Specialization for core::Header
  */
 template<>
-core::Header ProtobufDeserializable::deserialize<core::Header>() const
+inline core::Header ProtobufDeserializable::deserialize<core::Header>() const
 {
   auto th = BasicDeserializable::deserialize<icon::transport::Header>();
 

@@ -24,6 +24,7 @@ endif()
 set(SOURCES
   main.cpp
   utils/context.cpp
+  endpoint/basic_endpoint/basic_endpoint.cpp
 )
 file(GLOB HEADER_SOURCES${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 

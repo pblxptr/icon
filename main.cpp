@@ -13,6 +13,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <spdlog/spdlog.h>
 #include <cassert>
+#include <endpoint/message_context.hpp>
 
 namespace posix = boost::asio::posix;
 
@@ -24,6 +25,7 @@ using boost::asio::detached;
 constexpr auto ZmqServerEndpoint = "tcp://127.0.0.1:6667";
 void server()
 {
+  using namespace icon;
   using namespace icon::details;
   using namespace icon::transport;
 
@@ -76,7 +78,7 @@ void client(const char* endpoint)
   bctx.run();
 }
 
-auto main() -> int
+int main()
 {
   spdlog::set_level(spdlog::level::debug);
 

@@ -15,7 +15,7 @@ namespace icon::details
     template<class Message, class Consumer>
     void add_consumer(Consumer&& consumer)
     {
-      const auto msg_number = BasicEndpoint::MessageData_t<Message>::message_number();
+      const auto msg_number = BasicEndpoint::Serializable_t<Message>::message_number();
 
       if (handlers_.contains(msg_number)) {
         throw std::invalid_argument("Handler for requested message has been already registered.");
@@ -25,14 +25,13 @@ namespace icon::details
         BasicEndpointConsumerHandler<
           BasicEndpoint,
           BasicEndpoint::Request_t,
-          Message, 
+          Message,
           Consumer
         >
       >(std::forward<Consumer>(consumer));
     }
 
-    template<class... Args>
-    auto build(Args... args)
+    auto build()
     {
       return std::make_unique<BasicEndpoint>(
         context::zmq(),
