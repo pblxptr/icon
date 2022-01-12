@@ -76,6 +76,7 @@
     "coroutine": "cpp",
     "source_location": "cpp",
     "*.inc": "cpp",
-    "cassert": "cpp"
+    "cassert": "cpp",
+    "ranges": "cpp"
   }
 }

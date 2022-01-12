@@ -6,7 +6,6 @@
 #include <bzmq/co_stream_watcher.hpp>
 #include <cassert>
 #include <client/basic_client.hpp>
-#include <client/zmq_client.hpp>
 #include <core/protocol.hpp>
 #include <endpoint/endpoint_config.hpp>
 #include <endpoint/message_context.hpp>

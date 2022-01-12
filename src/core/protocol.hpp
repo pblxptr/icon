@@ -73,6 +73,12 @@ template <class Protocol> struct Parser {
 
   void clear() { buffer_.clear(); }
 
+  template<class... Fields>
+  constexpr auto extract() &&
+  {
+    return std::make_tuple( (std::move(*this). template get<Fields>()) ... );
+  }
+
   RawBuffer buffer_;
 };
 } // namespace icon::details

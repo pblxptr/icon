@@ -111,12 +111,12 @@ private:
     auto header =
         Deserializable_t{
             std::move(parser).template get<icon::details::fields::Header>()}
-            .template deserialize<icon::transport::Header>();
+            .template deserialize<icon::details::core::Header>();
 
     auto message = Deserializable_t{
         std::move(parser).template get<icon::details::fields::Body>()};
 
-    return Response{icon::details::core::Header{header.message_number()},
+    return Response{std::move(header),
                     std::move(message)};
   }
 

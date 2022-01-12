@@ -1,24 +1,26 @@
 #include <endpoint/basic_endpoint/basic_endpoint.hpp>
+#include <utils/support.hpp>
 
 namespace {
-template <class RawBuffer, class Protocol, class Request, class RawMessageData>
+template <class RawBuffer, class Protocol, class Request, class Deserializable>
 auto extract_request(RawBuffer &&buffer) {
-  auto parser = icon::details::Parser<Protocol>{std::move(buffer)};
-  auto identity = std::move(parser)
-                      .template get<icon::details::fields::Identity>()
-                      .to_string();
+  auto [raw_identity, raw_header, raw_body] = icon::details::Parser<Protocol>{std::move(buffer)}.template extract< //TODO: Temp created. Take a look at this
+    icon::details::fields::Identity,
+    icon::details::fields::Header,
+    icon::details::fields::Body
+  >();
 
-  auto header =
-      RawMessageData{
-          std::move(parser).template get<icon::details::fields::Header>()}
-          .template deserialize<icon::transport::Header>();
+  auto identity = icon::details::core::Identity{raw_identity.to_string()};
+  auto header = Deserializable{std::move(raw_header)}
+    .template deserialize<icon::details::core::Header>();
+  auto body = Deserializable{std::move(raw_body)};
 
-  auto message = RawMessageData{
-      std::move(parser).template get<icon::details::fields::Body>()};
+  return Request{
+    std::move(identity),
+    std::move(header),
+    std::move(body)
+  };
 
-  return Request{icon::details::core::Identity{std::move(identity)},
-                 icon::details::core::Header{header.message_number()},
-                 std::move(message)};
 }
 } // namespace
 
