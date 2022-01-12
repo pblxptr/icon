@@ -1,10 +1,8 @@
 #pragma once
 
-#include <serialization/protobuf_message_number.hpp>
+#include <protobuf/protobuf_message_number.hpp>
 
 #include "icon.pb.h"
-#include <spdlog/spdlog.h>
-#include <core/protocol.hpp>
 #include <core/header.hpp>
 
 namespace icon::details::serialization::protobuf

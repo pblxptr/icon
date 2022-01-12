@@ -7,8 +7,8 @@ find_package(Boost REQUIRED coroutine)
 find_package(Protobuf REQUIRED)
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-  transport/metadata.proto
-  transport/icon.proto
+  protobuf/metadata.proto
+  protobuf/icon.proto
 )
 
 set(CMAKE_CXX_STANDARD 20)

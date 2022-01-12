@@ -13,7 +13,7 @@
 #include <bzmq/co_stream_watcher.hpp>
 #include <bzmq/zmq_co_recv_op.hpp>
 #include <bzmq/zmq_co_send_op.hpp>
-#include <serialization/protobuf_serialization.hpp>
+#include <protobuf/protobuf_serialization.hpp>
 #include <client/response.hpp>
 
 namespace icon::details

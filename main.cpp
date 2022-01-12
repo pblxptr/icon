@@ -1,7 +1,7 @@
 #include "icon.pb.h"
 #include <bzmq/co_stream_watcher.hpp>
 #include <client/zmq_client.hpp>
-#include <serialization/protobuf_serialization.hpp>
+#include <protobuf/protobuf_serialization.hpp>
 #include <core/protocol.hpp>
 #include <endpoint/endpoint_config.hpp>
 #include <client/basic_client.hpp>

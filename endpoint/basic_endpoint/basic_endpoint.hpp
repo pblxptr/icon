@@ -6,7 +6,7 @@
 #include <endpoint/request.hpp>
 #include <core/protocol.hpp>
 #include <core/identity.hpp>
-#include <serialization/protobuf_serialization.hpp>
+#include <protobuf/protobuf_serialization.hpp>
 #include <utils/context.hpp>
 #include "icon.hpp"
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <metadata.pb.h>
+
 namespace icon::details::serialization::protobuf
 {
   template<class T>

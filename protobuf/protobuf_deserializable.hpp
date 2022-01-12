@@ -1,6 +1,6 @@
 #pragma once
 
-#include <serialization/protobuf_message_number.hpp>
+#include <protobuf/protobuf_message_number.hpp>
 
 #include "icon.pb.h"
 #include <spdlog/spdlog.h>
