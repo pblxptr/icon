@@ -2,7 +2,7 @@
 
 #include <core/identity.hpp>
 #include <core/header.hpp>
-#include <core/body.hpp>
+#include <serialization/serialization.hpp>
 
 namespace icon::details
 {

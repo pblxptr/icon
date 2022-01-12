@@ -6,7 +6,6 @@
 #include <endpoint/request.hpp>
 #include <core/protocol.hpp>
 #include <core/identity.hpp>
-#include <core/body.hpp>
 #include <serialization/protobuf_serialization.hpp>
 #include <utils/context.hpp>
 #include "icon.hpp"
@@ -61,8 +60,8 @@ public:
   using BaseEndpoint::Raw_t;
   using BaseEndpoint::RawBuffer_t;
   template<class Message>
-  using MessageData_t         = icon::details::serialization::protobuf::ProtobufMessage<Message>;
-  using RawMessageData_t      = icon::details::serialization::protobuf::ProtobufRawMessage;
+  using MessageData_t         = icon::details::serialization::protobuf::ProtobufSerializable<Message>;
+  using RawMessageData_t      = icon::details::serialization::protobuf::ProtobufDeserializable;
   using Request_t             = icon::details::InternalRequest<RawMessageData_t>;
   using ConsumerHandlerBase_t = ConsumerHandler<BasicEndpoint, Request_t>;
 

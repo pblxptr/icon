@@ -16,16 +16,6 @@
 #include <serialization/protobuf_serialization.hpp>
 #include <client/response.hpp>
 
-namespace {
-  auto convert_header(const icon::details::core::Header& header)
-  {
-    auto transport_header = icon::transport::Header{};
-    transport_header.set_message_number(header.message_number());
-
-    return transport_header;
-  }
-}
-
 namespace icon::details
 {
 class BasicClient
@@ -36,8 +26,8 @@ class BasicClient
   using Raw_t = zmq::message_t;
   using RawBuffer_t = std::vector<Raw_t>;
   template<class Message>
-  using MessageData_t = icon::details::serialization::protobuf::ProtobufMessage<Message>;
-  using RawMessageData_t = icon::details::serialization::protobuf::ProtobufRawMessage;
+  using Serializable_t = icon::details::serialization::protobuf::ProtobufSerializable<Message>;
+  using Deserializable_t = icon::details::serialization::protobuf::ProtobufDeserializable;
 
   using Protocol_t = icon::details::Protocol<
     Raw_t,
@@ -47,8 +37,8 @@ class BasicClient
       icon::details::fields::Body
     >
   >;
-  using Response_t         = Response<RawMessageData_t>;
-  using InternalResponse_t = InternalResponse<RawMessageData_t>;
+  using Response_t         = Response<Deserializable_t>;
+  using InternalResponse_t = InternalResponse<Deserializable_t>;
 public:
   BasicClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
     : socket_{zctx, zmq::socket_type::dealer}
@@ -90,7 +80,7 @@ private:
   template<class Response, MessageToSend Message>
   awaitable<Response> async_send_with_response(Message&& message)
   {
-    auto header = core::Header{MessageData_t<Message>::message_number()};
+    auto header = core::Header{Serializable_t<Message>::message_number()};
 
     co_await async_do_send(std::move(header), std::forward<Message>(message));
     co_return co_await async_receive<Response>();
@@ -100,14 +90,12 @@ private:
   awaitable<void> async_do_send(core::Header&& header, Message&& message)
   {
     auto zmq_send_op = ZmqCoSendOp{socket_, watcher_};
-    
-
-
     co_await zmq_send_op.async_send(
-        build_raw_buffer(
-          MessageData_t{convert_header(header)},
-          MessageData_t<Message>{std::move(message)}
-    ));
+      build_raw_buffer(
+        Serializable_t<core::Header>{std::move(header)},
+        Serializable_t<Message>{std::move(message)}
+      )
+    );
   }
 
   template<class Response>
@@ -137,11 +125,11 @@ private:
   {
     auto parser = Parser<Protocol_t>(std::move(raw_buffer));
 
-    auto header = RawMessageData_t{std::move(parser)
+    auto header = Deserializable_t{std::move(parser)
       .template get<icon::details::fields::Header>()}
       .template deserialize<icon::transport::Header>();
 
-    auto message = RawMessageData_t{std::move(parser)
+    auto message = Deserializable_t{std::move(parser)
       .template get<icon::details::fields::Body>()};
 
     return Response{

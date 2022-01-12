@@ -13,7 +13,6 @@
 #include <boost/asio/co_spawn.hpp>
 #include <spdlog/spdlog.h>
 #include <cassert>
-#include <bzmq/boost_coro.hpp>
 
 namespace posix = boost::asio::posix;
 
@@ -50,10 +49,10 @@ void server()
 template<class Message>
 auto make_message()
 {
-  auto message_protobuf = icon::details::serialization::protobuf::ProtobufMessage<Message>{{}};
+  auto message_protobuf = icon::details::serialization::protobuf::ProtobufSerializable<Message>{{}};
   auto header = icon::transport::Header{};
   header.set_message_number(message_protobuf.message_number());
-  auto header_protobuf = icon::details::serialization::protobuf::ProtobufMessage<icon::transport::Header>{header};
+  auto header_protobuf = icon::details::serialization::protobuf::ProtobufSerializable<icon::transport::Header>{header};
  
 
   auto parts = std::vector<zmq::message_t>{};
@@ -75,48 +74,16 @@ void client(const char* endpoint)
   using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
   work_guard_type work_guard(bctx.get_executor());
   bctx.run();
-
-
-
-  // auto message_protobuf = icon::details::serialization::protobuf::ProtobufMessage<icon::transport::ConnectionEstablishReq>{{}};
-
-  // auto zctx = zmq::context_t{};
-  // auto socket = zmq::socket_t{zctx, zmq::socket_type::dealer};
-  
-  // socket.connect(ZmqServerEndpoint);
-  // spdlog::debug("Connected");
-
-  // std::this_thread::sleep_for(std::chrono::seconds(3));
-
-  // while(1)
-  // {
-  //   zmq::send_multipart(socket, make_message<icon::transport::ConnectionEstablishReq>());
-  //   spdlog::debug("Sent connection establish req");
-  //   // std::this_thread::sleep_for(std::chrono::seconds(2));
-  // }
 }
 
 auto main() -> int
 {
-  volatile char x[20];
-  volatile char d = x[21];
+  spdlog::set_level(spdlog::level::debug);
 
-  int* ptr = nullptr;
-  *ptr;
+  auto server_th = std::thread(server);
+  auto client1_th = std::thread(client, ZmqServerEndpoint);
 
-  if (d == 21)
-  {
-    x[21] = 5;
-  }
-
-  int xd;
-
-  // spdlog::set_level(spdlog::level::debug);
-
-  // auto server_th = std::thread(server);
-  // auto client1_th = std::thread(client, ZmqServerEndpoint);
-
-  // server_th.join();
-  // client1_th.join();
+  server_th.join();
+  client1_th.join();
 }
 

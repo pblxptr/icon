@@ -54,7 +54,7 @@ public:
   Co_StreamWatcher(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher& operator=(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher(Co_StreamWatcher&&) = default;
-  Co_StreamWatcher& operator=(Co_StreamWatcher&&) = default;
+  Co_StreamWatcher& operator=(Co_StreamWatcher&&) = delete;
 
   ~Co_StreamWatcher()
   {

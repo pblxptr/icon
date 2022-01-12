@@ -14,28 +14,37 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
 set(CMAKE_CXX_STANDARD 20)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "-fcoroutines")
+  # set(CMAKE_CXX_FLAGS "-fcoroutines")
 else()
-add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
-set(CMAKE_CXX_FLAGS "-std=c++20")
-# set(CMAKE_CXX_FLAGS "-fcoroutines-ts -stdlib=libc++")
+  #Workaround for clang, Boost asio has relased coroutines without full supported clang
+  add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
+  set(CMAKE_CXX_FLAGS "-std=c++20")
 endif()
 
 set(SOURCES
   main.cpp
   utils/context.cpp
 )
-file(GLOB HEADER_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp
-)
+file(GLOB HEADER_SOURCES${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
 include_directories(build)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADER_SOURCES} ${PROTO_SRCS} ${PROTO_HDRS})
+add_executable(${CMAKE_PROJECT_NAME}
+  ${SOURCES}
+  ${HEADER_SOURCES}
+  ${PROTO_SRCS}
+  ${PROTO_HDRS}
+)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} pthread zmq zmqpp fmt ${Protobuf_LIBRARIES})
+target_link_libraries(${CMAKE_PROJECT_NAME}
+  pthread
+  zmq
+  zmqpp
+  fmt
+  ${Protobuf_LIBRARIES}
+)
 
 
