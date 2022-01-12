@@ -11,17 +11,20 @@ namespace icon::details::serialization::protobuf {
  *
  * @tparam Data to serialize
  */
-template <class Data> class BasicSerializable {
+template<class Data>
+class BasicSerializable
+{
 public:
-  BasicSerializable(Data message) : data_{std::move(message)} {}
+  BasicSerializable(Data message) : data_{ std::move(message) } {}
 
   BasicSerializable(const BasicSerializable &) = delete;
   BasicSerializable &operator=(const BasicSerializable &) = delete;
   BasicSerializable(BasicSerializable &&) = default;
   BasicSerializable &operator=(BasicSerializable &&) = default;
 
-  zmq::message_t serialize() const {
-    auto serialized = zmq::message_t{data_.ByteSizeLong()};
+  zmq::message_t serialize() const
+  {
+    auto serialized = zmq::message_t{ data_.ByteSizeLong() };
     data_.SerializeToArray(serialized.data(), serialized.size());
 
     return serialized;
@@ -36,12 +39,14 @@ private:
  *
  * @tparam Data message to serializae
  */
-template <class T> class ProtobufSerializable : public BasicSerializable<T> {
+template<class T>
+class ProtobufSerializable : public BasicSerializable<T>
+{
 public:
   using BasicSerializable<T>::serialize;
 
   explicit ProtobufSerializable(T data)
-      : BasicSerializable<T>(std::move(data)) {}
+    : BasicSerializable<T>(std::move(data)) {}
 
   static size_t message_number() { return protobuf_message_number<T>(); }
 };
@@ -51,14 +56,15 @@ public:
  *
  * @tparam specialized for core::Header
  */
-template <>
+template<>
 class ProtobufSerializable<core::Header>
-    : public BasicSerializable<icon::transport::Header> {
+  : public BasicSerializable<icon::transport::Header>
+{
 public:
   using BasicSerializable<icon::transport::Header>::serialize;
 
   explicit ProtobufSerializable(const core::Header &header)
-      : BasicSerializable<icon::transport::Header>(convert(header)) {}
+    : BasicSerializable<icon::transport::Header>(convert(header)) {}
 
 private:
   /**
@@ -67,7 +73,8 @@ private:
    * @param header Header to serialize
    * @return icon::transport::Header
    */
-  icon::transport::Header convert(const core::Header &header) {
+  icon::transport::Header convert(const core::Header &header)
+  {
     auto th = icon::transport::Header{};
     th.set_message_number(header.message_number());
 
@@ -75,4 +82,4 @@ private:
   }
 };
 
-} // namespace icon::details::serialization::protobuf
+}// namespace icon::details::serialization::protobuf

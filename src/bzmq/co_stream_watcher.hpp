@@ -28,10 +28,12 @@ using boost::asio::use_awaitable;
 
 #endif
 
-namespace {}
+namespace {
+}
 
 namespace icon::details {
-class Co_StreamWatcher {
+class Co_StreamWatcher
+{
   enum class ZmqOperation {
     None = 0,
     Read = ZMQ_POLLIN,
@@ -45,7 +47,7 @@ class Co_StreamWatcher {
 
 public:
   Co_StreamWatcher(zmq::socket_t &socket, boost::asio::io_context &context)
-      : socket_{socket}, streamd_{context} {}
+    : socket_{ socket }, streamd_{ context } {}
 
   Co_StreamWatcher(const Co_StreamWatcher &) = delete;
   Co_StreamWatcher &operator=(const Co_StreamWatcher &) = delete;
@@ -54,11 +56,12 @@ public:
 
   ~Co_StreamWatcher() { stop(); }
 
-  awaitable<bool> async_wait_receive(bool autonomous_mode = true) {
+  awaitable<bool> async_wait_receive(bool autonomous_mode = true)
+  {
     spdlog::debug("StreamWatcher::async_wait_receive");
 
     auto result =
-        co_await setup_async_wait(ZmqOperation::Read, Wait_t::wait_read);
+      co_await setup_async_wait(ZmqOperation::Read, Wait_t::wait_read);
 
     if (not result && autonomous_mode) {
       co_return co_await async_wait_receive(autonomous_mode);
@@ -67,17 +70,19 @@ public:
     co_return result;
   }
 
-  awaitable<bool> async_wait_send() {
+  awaitable<bool> async_wait_send()
+  {
     spdlog::debug("StreamWatcher::async_wait_send");
 
     auto result =
-        co_await setup_async_wait(ZmqOperation::Write, Wait_t::wait_write);
+      co_await setup_async_wait(ZmqOperation::Write, Wait_t::wait_write);
     co_return result;
   }
 
 private:
   awaitable<bool> setup_async_wait(const ZmqOperation op,
-                                   const Wait_t wait_type) {
+    const Wait_t wait_type)
+  {
     if (!streamd_.is_open()) {
       streamd_.assign(socket_.get(zmq::sockopt::fd));
     }
@@ -87,14 +92,15 @@ private:
     }
 
     co_await streamd_.async_wait(posix::stream_descriptor::wait_type::wait_read,
-                                 use_awaitable);
+      use_awaitable);
     co_return check_ops(op);
   }
 
-  bool check_ops(const ZmqOperation op) {
+  bool check_ops(const ZmqOperation op)
+  {
     const auto events = socket_.get(zmq::sockopt::events);
     const auto op_event_flag =
-        static_cast<std::underlying_type_t<ZmqOperation>>(op);
+      static_cast<std::underlying_type_t<ZmqOperation>>(op);
 
     if (events & op_event_flag) {
       flags_.set(op);
@@ -103,7 +109,8 @@ private:
     return false;
   }
 
-  void stop() {
+  void stop()
+  {
     streamd_.cancel();
     streamd_.release();
   }
@@ -115,4 +122,4 @@ private:
   boost::asio::posix::stream_descriptor streamd_;
   Flags_t flags_;
 };
-} // namespace icon::details
+}// namespace icon::details

@@ -13,15 +13,18 @@
 namespace {
 using boost::asio::awaitable;
 using boost::asio::use_awaitable;
-} // namespace
+}// namespace
 
 namespace icon::details {
-class ZmqCoRecvOp {
+class ZmqCoRecvOp
+{
 public:
   ZmqCoRecvOp(zmq::socket_t &socket, Co_StreamWatcher &watcher)
-      : socket_{socket}, watcher_{watcher} {}
+    : socket_{ socket }, watcher_{ watcher } {}
 
-  template <class RawBuffer> awaitable<RawBuffer> async_receive() {
+  template<class RawBuffer>
+  awaitable<RawBuffer> async_receive()
+  {
     spdlog::debug("ZmqCoSendOp: async_receive for mulipart");
 
     auto ret = co_await watcher_.async_wait_receive();
@@ -29,15 +32,16 @@ public:
 
     auto buffer = RawBuffer{};
     const auto numberOfMessages = zmq::recv_multipart(
-        socket_, std::back_inserter(buffer), zmq::recv_flags::dontwait);
+      socket_, std::back_inserter(buffer), zmq::recv_flags::dontwait);
     assert(numberOfMessages != 0);
 
     co_return buffer;
   }
 
-  template <class RawBuffer>
+  template<class RawBuffer>
   awaitable<RawBuffer>
-  async_receive() requires std::is_same_v<RawBuffer, zmq::message_t> {
+    async_receive() requires std::is_same_v<RawBuffer, zmq::message_t>
+  {
     spdlog::debug("ZmqCoSendOp: async_receive for single");
 
     auto ret = co_await watcher_.async_wait_receive();
@@ -55,4 +59,4 @@ public:
 private : zmq::socket_t &socket_;
   Co_StreamWatcher &watcher_;
 };
-} // namespace icon::details
+}// namespace icon::details

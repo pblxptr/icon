@@ -6,21 +6,24 @@
 #include <endpoint/endpoint.hpp>
 
 namespace icon::details {
-class BaseEndpoint : public Endpoint {
+class BaseEndpoint : public Endpoint
+{
 protected:
   using Raw_t = zmq::message_t;
   using RawBuffer_t = std::vector<Raw_t>;
 
   BaseEndpoint(zmq::socket_t socket, boost::asio::io_context &bcxt)
-      : socket_{std::move(socket)}, watcher_{socket_, bcxt},
-        zmq_recv_op_{socket_, watcher_}, zmq_send_op_{socket_, watcher_} {}
+    : socket_{ std::move(socket) }, watcher_{ socket_, bcxt },
+      zmq_recv_op_{ socket_, watcher_ }, zmq_send_op_{ socket_, watcher_ } {}
 
 protected:
-  awaitable<RawBuffer_t> async_recv_base() {
+  awaitable<RawBuffer_t> async_recv_base()
+  {
     co_return co_await zmq_recv_op_.async_receive<RawBuffer_t>();
   }
 
-  awaitable<void> async_send_base(RawBuffer_t &&buffer) {
+  awaitable<void> async_send_base(RawBuffer_t &&buffer)
+  {
     co_await zmq_send_op_.async_send(std::move(buffer));
   }
 
@@ -30,4 +33,4 @@ protected:
   ZmqCoRecvOp zmq_recv_op_;
   ZmqCoSendOp zmq_send_op_;
 };
-} // namespace icon::details
+}// namespace icon::details

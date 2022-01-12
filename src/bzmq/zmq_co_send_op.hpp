@@ -11,39 +11,43 @@
 namespace {
 using boost::asio::awaitable;
 using boost::asio::use_awaitable;
-} // namespace
+}// namespace
 
 namespace icon::details {
-class ZmqCoSendOp {
+class ZmqCoSendOp
+{
 public:
   ZmqCoSendOp(zmq::socket_t &socket, Co_StreamWatcher &watcher)
-      : socket_{socket}, watcher_{watcher} {}
+    : socket_{ socket }, watcher_{ watcher } {}
 
-  template <class RawBuffer> awaitable<void> async_send(RawBuffer &&buffer) {
+  template<class RawBuffer>
+  awaitable<void> async_send(RawBuffer &&buffer)
+  {
     spdlog::debug("ZmqCoSendOp: async_send for mulipart");
 
     const auto ret = co_await watcher_.async_wait_send();
     assert(ret);
 
     const auto nmessages = zmq::send_multipart(
-        socket_, std::forward<RawBuffer>(buffer), zmq::send_flags::dontwait);
+      socket_, std::forward<RawBuffer>(buffer), zmq::send_flags::dontwait);
     assert(nmessages == buffer.size());
   }
 
-  template <class RawBuffer>
+  template<class RawBuffer>
   awaitable<void> async_send(
-      RawBuffer &&buffer) requires std::is_same_v<RawBuffer, zmq::message_t> {
+    RawBuffer &&buffer) requires std::is_same_v<RawBuffer, zmq::message_t>
+  {
     spdlog::debug("ZmqCoSendOp: async_send for single");
 
     const auto ret = co_await watcher_.async_wait_send();
     assert(ret);
 
     const auto nbytes = socket_.send(std::forward<RawBuffer>(buffer),
-                                     zmq::send_flags::dontwait);
+      zmq::send_flags::dontwait);
     assert(nbytes != 0);
   }
 
 private : zmq::socket_t &socket_;
   Co_StreamWatcher &watcher_;
 };
-} // namespace icon::details
+}// namespace icon::details

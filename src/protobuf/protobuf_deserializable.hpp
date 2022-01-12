@@ -14,17 +14,20 @@ namespace icon::details::serialization::protobuf {
  * @brief Represents BasicDeserializable data for Protobuf deserialization
  *
  */
-class BasicDeserializable {
+class BasicDeserializable
+{
 public:
   explicit BasicDeserializable(zmq::message_t raw_message)
-      : raw_message_{std::move(raw_message)} {}
+    : raw_message_{ std::move(raw_message) } {}
 
   BasicDeserializable(const BasicDeserializable &) = delete;
   BasicDeserializable &operator=(const BasicDeserializable &) = delete;
   BasicDeserializable(BasicDeserializable &&) = default;
   BasicDeserializable &operator=(BasicDeserializable &&) = default;
 
-  template <class Destination> Destination deserialize() const {
+  template<class Destination>
+  Destination deserialize() const
+  {
     auto dst = Destination{};
     dst.ParseFromArray(raw_message_.data(), raw_message_.size());
 
@@ -39,10 +42,11 @@ private:
  * @brief Represents ProtobufDeserializable data
  *
  */
-class ProtobufDeserializable : public BasicDeserializable {
+class ProtobufDeserializable : public BasicDeserializable
+{
 public:
   ProtobufDeserializable(zmq::message_t data)
-      : BasicDeserializable(std::move(data)) {}
+    : BasicDeserializable(std::move(data)) {}
 
   /**
    * @brief Checks whether message number matches to Message type
@@ -52,8 +56,9 @@ public:
    * @return Returns true if message number matches to Message type, false if
    * not
    */
-  template <class T>
-  bool message_number_match_for(const size_t message_number) const {
+  template<class T>
+  bool message_number_match_for(const size_t message_number) const
+  {
     return protobuf_message_number<T>() == message_number;
   }
 
@@ -62,7 +67,9 @@ public:
    *
    * @tparam Destination type
    */
-  template <class Destination> Destination deserialize() const {
+  template<class Destination>
+  Destination deserialize() const
+  {
     return BasicDeserializable::deserialize<Destination>();
   }
 };
@@ -74,9 +81,10 @@ public:
  * @param message_number Message number to check
  * @return Returns true if message number matches to Message type, false if not
  */
-template <>
+template<>
 inline bool ProtobufDeserializable::message_number_match_for<core::Header>(
-    const size_t message_number) const {
+  const size_t message_number) const
+{
   return false;
 }
 
@@ -85,11 +93,12 @@ inline bool ProtobufDeserializable::message_number_match_for<core::Header>(
  *
  * @tparam  Specialization for core::Header
  */
-template <>
-inline core::Header ProtobufDeserializable::deserialize<core::Header>() const {
+template<>
+inline core::Header ProtobufDeserializable::deserialize<core::Header>() const
+{
   auto th = BasicDeserializable::deserialize<icon::transport::Header>();
 
-  return core::Header{th.message_number()};
+  return core::Header{ th.message_number() };
 }
 
-} // namespace icon::details::serialization::protobuf
+}// namespace icon::details::serialization::protobuf
