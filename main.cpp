@@ -1,3 +1,11 @@
+#include "icon.pb.h"
+#include <bzmq/co_stream_watcher.hpp>
+#include <client/zmq_client.hpp>
+#include <serialization/protobuf_serialization.hpp>
+#include <core/protocol.hpp>
+#include <endpoint/endpoint_config.hpp>
+#include <client/basic_client.hpp>
+
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
 #include <boost/asio.hpp>
@@ -5,14 +13,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <spdlog/spdlog.h>
 #include <cassert>
-#include <bzmq/co_stream_watcher.hpp>
-#include <client/zmq_client.hpp>
-#include "icon.pb.h"
-#include <serialization/protobuf_serialization.hpp>
-#include <core/protocol.hpp>
-#include <endpoint/endpoint_config.hpp>
-#include <client/basic_client.hpp>
-
+#include <bzmq/boost_coro.hpp>
 
 namespace posix = boost::asio::posix;
 
@@ -95,14 +96,27 @@ void client(const char* endpoint)
   // }
 }
 
-int main()
+auto main() -> int
 {
-  spdlog::set_level(spdlog::level::debug);
+  volatile char x[20];
+  volatile char d = x[21];
 
-  auto server_th = std::thread(server);
-  auto client1_th = std::thread(client, ZmqServerEndpoint);
+  int* ptr = nullptr;
+  *ptr;
 
-  server_th.join();
-  client1_th.join();
+  if (d == 21)
+  {
+    x[21] = 5;
+  }
+
+  int xd;
+
+  // spdlog::set_level(spdlog::level::debug);
+
+  // auto server_th = std::thread(server);
+  // auto client1_th = std::thread(client, ZmqServerEndpoint);
+
+  // server_th.join();
+  // client1_th.join();
 }
 

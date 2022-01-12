@@ -2,20 +2,34 @@
 
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
-#include <boost/asio.hpp>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/co_spawn.hpp>
 #include <spdlog/spdlog.h>
 #include <utils/flags.hpp>
 #include <cassert>
+#include <boost/asio.hpp>
 
 namespace posix = boost::asio::posix;
 
-namespace {
+#ifdef __GNU__
+  #include <boost/asio/awaitable.hpp>
+  #include <boost/asio/co_spawn.hpp>
+
   using boost::asio::awaitable;
   using boost::asio::co_spawn;
   using boost::asio::use_awaitable;
   using boost::asio::detached;
+#else
+  #include <boost/asio/awaitable.hpp>
+  #include <boost/asio/co_spawn.hpp>
+
+  using boost::asio::awaitable;
+  using boost::asio::co_spawn;
+  using boost::asio::use_awaitable;
+  using boost::asio::detached;
+
+#endif
+
+namespace {
+
 }
 
 namespace icon::details {

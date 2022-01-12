@@ -6,6 +6,7 @@
 
 namespace icon::details::serialization::protobuf
 {
+
 template<class Message>
 class ProtobufMessage
 {
@@ -66,6 +67,7 @@ Destination deserialize() const
 private:
   zmq::message_t raw_message_;
 };
+
 }
 
 

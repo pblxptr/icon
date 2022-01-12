@@ -29,13 +29,13 @@ namespace {
       .template get<icon::details::fields::Header>()}
       .template deserialize<icon::transport::Header>();
 
-    auto body = RawMessageData{std::move(parser)
+    auto message = RawMessageData{std::move(parser)
       .template get<icon::details::fields::Body>()};
 
     return Request{
       icon::details::core::Identity{std::move(identity)},
       icon::details::core::Header{header.message_number()},
-      icon::details::core::DeserializableBody{std::move(body)}
+      std::move(message)
     };
   }
   template<

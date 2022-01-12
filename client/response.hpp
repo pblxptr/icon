@@ -9,76 +9,86 @@
 
 namespace icon::details
 {
-  template<Deserializable Payload>
-  class InternalResponse
+  template<Deserializable Message>
+  class BaseResponse
   {
   public:
-    InternalResponse(
-      core::Header&& header,
-      core::DeserializableBody<Payload>&& body
-    )
-    : header_{std::move(header)}
-    , body_{std::move(body)}
+    BaseResponse(Message&& message)
+      : message_{std::move(message)}
     {}
+
+    template<class T>
+    bool message_number_match_for(const size_t message_number) const
+    {
+      return message_.template message_number_match_for<T>(message_number);
+    }
+
+    template<class T>
+    T message() const
+    {
+      return message_.template deserialize<T>();
+    }
+
+    template<class T>
+    T message_safe(const size_t message_number) const
+    {
+      if (!message_number_match_for<T>(message_number))
+      {
+        throw std::runtime_error("Cannot deserialize");
+      }
+
+      return message_.template deserialize<T>();
+    }
+
+  private:
+    Message message_;
+  };
+
+
+  template<Deserializable Message>
+  class InternalResponse  : public BaseResponse<Message>
+  {
+  public:
+    InternalResponse(core::Header&& header, Message&& message)
+      : BaseResponse<Message>(std::move(message))
+      , header_{std::move(header)}
+    {}
+
+    using BaseResponse<Message>::message;
 
     const core::Header& header() const
     {
       return header_;
     }
 
-    template<class Message>
+    template<class T>
     bool is() const
     {
-      return body_.template message_number_match_for<Message>(header_.message_number());
-    }
-
-    template<class Message>
-    Message body()
-    {
-      if (!is<Message>())
-      {
-        throw std::runtime_error("Cannot deserialize");
-      }
-
-      return body_.template deserialize<Message>();
+      return BaseResponse<Message>:: template message_number_match_for<T>(header_.message_number());
     }
 
   private:
     core::Header header_;
-    core::DeserializableBody<Payload> body_;
   };
 
-  template<Deserializable Payload>
-  class Response
+  template<Deserializable Message>
+  class Response : public BaseResponse<Message>
   {
   public:
-    Response(
-      core::Header&& header,
-      core::DeserializableBody<Payload>&& body
-    )
-    : message_number_{header.message_number()}
-    , body_{std::move(body)}
+    Response(core::Header&& header, Message&& message)
+      : BaseResponse<Message>(std::move(message))
+      , message_number_{header.message_number()}
     {}
 
-    template<class Message>
-    bool is()
-    {
-      return body_.template message_number_match_for<Message>(message_number_);
-    }
+    using BaseResponse<Message>::message;
 
-    template<class Message>
-    Message body()
+    template<class T>
+    bool is() const
     {
-      if (!is<Message>())
-      {
-        throw std::runtime_error("Cannot deserialize");
-      }
-
-      return body_.template deserialize<Message>();
+      return BaseResponse<Message>:: template message_number_match_for<T>(message_number_);
     }
 
   private:
     size_t message_number_;
-    core::DeserializableBody<Payload> body_;
   };
 }

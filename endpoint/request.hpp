@@ -6,18 +6,18 @@
 
 namespace icon::details
 {
-  template<Deserializable Payload>
+  template<Deserializable Message>
   class InternalRequest
   {
   public:
     InternalRequest(
       core::Identity&& identity,
       core::Header&& header,
-      core::DeserializableBody<Payload>&& body
+      Message&& message
     )
     : identity_{std::move(identity)}
     , header_{std::move(header)}
-    , body_{std::move(body)}
+    , message_{std::move(message)}
     {}
 
     //Todo: Consider returning by value
@@ -31,26 +31,26 @@ namespace icon::details
       return header_;
     }
 
-    template<class Message>
+    template<class T>
     bool is()
     {
-      return body_.template message_number_match_for<Message>(header_.message_number());
+      return message_.template message_number_match_for<T>(header_.message_number());
     }
 
-    template<class Message>
-    Message body()
+    template<class T>
+    T body()
     {
-      if (!is<Message>()) //TODO: Code duplication with Response
+      if (!is<T>()) //TODO: Code duplication with Response
       {
         throw std::runtime_error("Cannot deserialize");
       }
 
-      return body_.template deserialize<Message>();
+      return message_.template deserialize<T>();
     }
 
   private:
     core::Identity identity_;
     core::Header header_;
-    core::DeserializableBody<Payload> body_;
+    Message message_;
   };
 }

@@ -100,10 +100,13 @@ private:
   awaitable<void> async_do_send(core::Header&& header, Message&& message)
   {
     auto zmq_send_op = ZmqCoSendOp{socket_, watcher_};
+    
+
+
     co_await zmq_send_op.async_send(
         build_raw_buffer(
           MessageData_t{convert_header(header)},
-          MessageData_t{std::move(message)}
+          MessageData_t<Message>{std::move(message)}
     ));
   }
 
@@ -112,19 +115,19 @@ private:
   {
     auto zmq_recv_op = ZmqCoRecvOp{socket_, watcher_};
     auto raw_buffer = co_await zmq_recv_op.async_receive<RawBuffer_t>();
-    
+
     co_return parse_raw_buffer_with_response<Response>(std::move(raw_buffer));
   }
 
   template<
     Serializable Header,
-    Serializable Body
+    Serializable Message
   >
-  RawBuffer_t build_raw_buffer(Header&& header, Body&& body)
+  RawBuffer_t build_raw_buffer(Header&& header, Message&& message)
   {
     auto parser = Parser<Protocol_t>();
     parser.set<fields::Header>(header.serialize());
-    parser.set<fields::Body>(body.serialize());
+    parser.set<fields::Body>(message.serialize());
 
     return std::move(parser).parse();
   }
@@ -138,12 +141,12 @@ private:
       .template get<icon::details::fields::Header>()}
       .template deserialize<icon::transport::Header>();
 
-    auto body = RawMessageData_t{std::move(parser)
+    auto message = RawMessageData_t{std::move(parser)
       .template get<icon::details::fields::Body>()};
 
     return Response{
       icon::details::core::Header{header.message_number()},
-      icon::details::core::DeserializableBody{std::move(body)}
+      std::move(message)
     };
   }
 
