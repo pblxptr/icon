@@ -38,8 +38,9 @@
 //     using Header_t = icon::transport::Header;
 //     template<class T>
 //     using DataType           = icon::details::serialization::ProtobufData<T>;
-//     using BasicResponse_t    = BasicResponse   <Header_t,  DataType<Protocol_t::Raw>>;
-//     using InternalResponse_t = InternalResponse<Header_t,  DataType<Protocol_t::Raw>>;
+//     using BasicResponse_t    = BasicResponse   <Header_t,
+//     DataType<Protocol_t::Raw>>; using InternalResponse_t =
+//     InternalResponse<Header_t,  DataType<Protocol_t::Raw>>;
 
 //     ZmqClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
 //       : socket_{zctx, zmq::socket_type::dealer}
@@ -70,7 +71,8 @@
 //     {
 //       spdlog::debug("ZmqClient: async_send");
 
-//       auto body = icon::details::serialization::ProtobufData<Message>{std::forward<Message>(message)};
+//       auto body =
+//       icon::details::serialization::ProtobufData<Message>{std::forward<Message>(message)};
 //       auto header = get_header_for_message<Message>(body);
 
 //       auto parser = Parser<Protocol_t>();
@@ -90,7 +92,8 @@
 //     awaitable<void> init_connection_async()
 //     {
 //       const auto req = icon::transport::ConnectionEstablishReq{};
-//       const auto response = co_await send_async<decltype(req), InternalResponse_t>(std::move(req));
+//       const auto response = co_await send_async<decltype(req),
+//       InternalResponse_t>(std::move(req));
 
 //       if (not response.is<icon::transport::ConnectionEstablishCfm>()) {
 //         spdlog::debug("Response does not contain a valid message");
@@ -108,12 +111,15 @@
 
 //       //recv
 //       auto zmq_recv_op = ZmqCoRecvOp{socket_, watcher_};
-//       auto raw_buffer = co_await zmq_recv_op.async_receive<Protocol_t::RawBuffer>();
+//       auto raw_buffer = co_await
+//       zmq_recv_op.async_receive<Protocol_t::RawBuffer>();
 
 //       //parse
 //       auto parser = Parser<Protocol_t>{std::move(raw_buffer)};
-//       auto header = icon::details::serialization::ProtobufData(std::move(parser).get<fields::Header>());
-//       auto body = icon::details::serialization::ProtobufData(std::move(parser).get<fields::Body>());
+//       auto header =
+//       icon::details::serialization::ProtobufData(std::move(parser).get<fields::Header>());
+//       auto body =
+//       icon::details::serialization::ProtobufData(std::move(parser).get<fields::Body>());
 
 //       co_return Response{
 //         deserialize<Header_t>(header),

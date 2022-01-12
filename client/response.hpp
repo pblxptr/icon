@@ -1,93 +1,71 @@
 #pragma once
 
-#include <core/identity.hpp>
 #include <core/header.hpp>
+#include <core/identity.hpp>
 #include <serialization/serialization.hpp>
 
-//TODO: Code duplication
+// TODO: Code duplication
 
-namespace icon::details
-{
-  template<Deserializable Message>
-  class BaseResponse
-  {
-  public:
-    BaseResponse(Message&& message)
-      : message_{std::move(message)}
-    {}
+namespace icon::details {
+template <Deserializable Message> class BaseResponse {
+public:
+  BaseResponse(Message &&message) : message_{std::move(message)} {}
 
-    template<class T>
-    bool message_number_match_for(const size_t message_number) const
-    {
-      return message_.template message_number_match_for<T>(message_number);
+  template <class T>
+  bool message_number_match_for(const size_t message_number) const {
+    return message_.template message_number_match_for<T>(message_number);
+  }
+
+  template <class T> T message() const {
+    return message_.template deserialize<T>();
+  }
+
+  template <class T> T message_safe(const size_t message_number) const {
+    if (!message_number_match_for<T>(message_number)) {
+      throw std::runtime_error("Cannot deserialize");
     }
 
-    template<class T>
-    T message() const
-    {
-      return message_.template deserialize<T>();
-    }
+    return message_.template deserialize<T>();
+  }
 
-    template<class T>
-    T message_safe(const size_t message_number) const
-    {
-      if (!message_number_match_for<T>(message_number))
-      {
-        throw std::runtime_error("Cannot deserialize");
-      }
+private:
+  Message message_;
+};
 
-      return message_.template deserialize<T>();
-    }
+template <Deserializable Message>
+class InternalResponse : public BaseResponse<Message> {
+public:
+  InternalResponse(core::Header &&header, Message &&message)
+      : BaseResponse<Message>(std::move(message)), header_{std::move(header)} {}
 
-  private:
-    Message message_;
-  };
+  using BaseResponse<Message>::message;
 
+  const core::Header &header() const { return header_; }
 
-  template<Deserializable Message>
-  class InternalResponse  : public BaseResponse<Message>
-  {
-  public:
-    InternalResponse(core::Header&& header, Message&& message)
-      : BaseResponse<Message>(std::move(message))
-      , header_{std::move(header)}
-    {}
+  template <class T> bool is() const {
+    return BaseResponse<Message>::template message_number_match_for<T>(
+        header_.message_number());
+  }
 
-    using BaseResponse<Message>::message;
+private:
+  core::Header header_;
+};
 
-    const core::Header& header() const
-    {
-      return header_;
-    }
+template <Deserializable Message>
+class Response : public BaseResponse<Message> {
+public:
+  Response(core::Header &&header, Message &&message)
+      : BaseResponse<Message>(std::move(message)),
+        message_number_{header.message_number()} {}
 
-    template<class T>
-    bool is() const
-    {
-      return BaseResponse<Message>:: template message_number_match_for<T>(header_.message_number());
-    }
+  using BaseResponse<Message>::message;
 
-  private:
-    core::Header header_;
-  };
+  template <class T> bool is() const {
+    return BaseResponse<Message>::template message_number_match_for<T>(
+        message_number_);
+  }
 
-  template<Deserializable Message>
-  class Response : public BaseResponse<Message>
-  {
-  public:
-    Response(core::Header&& header, Message&& message)
-      : BaseResponse<Message>(std::move(message))
-      , message_number_{header.message_number()}
-    {}
-
-    using BaseResponse<Message>::message;
-
-    template<class T>
-    bool is() const
-    {
-      return BaseResponse<Message>:: template message_number_match_for<T>(message_number_);
-    }
-
-  private:
-    size_t message_number_;
-  };
-}
+private:
+  size_t message_number_;
+};
+} // namespace icon::details
