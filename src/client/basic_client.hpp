@@ -14,6 +14,7 @@
 #include <client/response.hpp>
 #include <core/header.hpp>
 #include <core/protocol.hpp>
+#include <icon.hpp>
 #include <protobuf/protobuf_serialization.hpp>
 
 namespace icon::details {

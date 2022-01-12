@@ -1,12 +1,12 @@
 #pragma once
 
-#include "icon.hpp"
 #include <core/identity.hpp>
 #include <core/protocol.hpp>
 #include <endpoint/base_endpoint.hpp>
 #include <endpoint/consumer_handler.hpp>
 #include <endpoint/endpoint.hpp>
 #include <endpoint/request.hpp>
+#include <icon.hpp>
 #include <protobuf/protobuf_serialization.hpp>
 #include <utils/context.hpp>
 
