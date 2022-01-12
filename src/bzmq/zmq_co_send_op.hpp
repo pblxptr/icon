@@ -17,11 +17,11 @@ namespace icon::details {
 class ZmqCoSendOp
 {
 public:
-  ZmqCoSendOp(zmq::socket_t &socket, Co_StreamWatcher &watcher)
+  ZmqCoSendOp(zmq::socket_t& socket, Co_StreamWatcher& watcher)
     : socket_{ socket }, watcher_{ watcher } {}
 
   template<class RawBuffer>
-  awaitable<void> async_send(RawBuffer &&buffer)
+  awaitable<void> async_send(RawBuffer&& buffer)
   {
     spdlog::debug("ZmqCoSendOp: async_send for mulipart");
 
@@ -35,7 +35,7 @@ public:
 
   template<class RawBuffer>
   awaitable<void> async_send(
-    RawBuffer &&buffer) requires std::is_same_v<RawBuffer, zmq::message_t>
+    RawBuffer&& buffer) requires std::is_same_v<RawBuffer, zmq::message_t>
   {
     spdlog::debug("ZmqCoSendOp: async_send for single");
 
@@ -47,7 +47,7 @@ public:
     assert(nbytes != 0);
   }
 
-private : zmq::socket_t &socket_;
-  Co_StreamWatcher &watcher_;
+private : zmq::socket_t& socket_;
+  Co_StreamWatcher& watcher_;
 };
 }// namespace icon::details

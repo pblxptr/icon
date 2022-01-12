@@ -45,17 +45,17 @@ struct Parser
 
   Parser() { buffer_.resize(DataLayout::size()); }
 
-  Parser(RawBuffer &&buffer)
+  Parser(RawBuffer&& buffer)
   {
     assert(buffer.size() == DataLayout::size());
 
     buffer_ = std::move(buffer);
   }
 
-  Parser(const Parser &) = delete;
-  Parser &operator=(const Parser &) = delete;
-  Parser(Parser &&) = default;
-  Parser &operator=(Parser &&) = default;
+  Parser(const Parser&) = delete;
+  Parser& operator=(const Parser&) = delete;
+  Parser(Parser&&) = default;
+  Parser& operator=(Parser&&) = default;
 
   template<class Field>
   Raw get() &

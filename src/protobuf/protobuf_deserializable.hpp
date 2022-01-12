@@ -20,10 +20,10 @@ public:
   explicit BasicDeserializable(zmq::message_t raw_message)
     : raw_message_{ std::move(raw_message) } {}
 
-  BasicDeserializable(const BasicDeserializable &) = delete;
-  BasicDeserializable &operator=(const BasicDeserializable &) = delete;
-  BasicDeserializable(BasicDeserializable &&) = default;
-  BasicDeserializable &operator=(BasicDeserializable &&) = default;
+  BasicDeserializable(const BasicDeserializable&) = delete;
+  BasicDeserializable& operator=(const BasicDeserializable&) = delete;
+  BasicDeserializable(BasicDeserializable&&) = default;
+  BasicDeserializable& operator=(BasicDeserializable&&) = default;
 
   template<class Destination>
   Destination deserialize() const

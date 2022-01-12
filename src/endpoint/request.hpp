@@ -9,14 +9,14 @@ template<Deserializable Message>
 class InternalRequest
 {
 public:
-  InternalRequest(core::Identity &&identity, core::Header &&header, Message &&message)
+  InternalRequest(core::Identity&& identity, core::Header&& header, Message&& message)
     : identity_{ std::move(identity) }, header_{ std::move(header) },
       message_{ std::move(message) } {}
 
   // Todo: Consider returning by value
-  const core::Identity &identity() const { return identity_; }
+  const core::Identity& identity() const { return identity_; }
 
-  const core::Header &header() const { return header_; }
+  const core::Header& header() const { return header_; }
 
   template<class T>
   bool is()

@@ -9,7 +9,7 @@ template<class Message, class Consumer>
 struct add_consumer_config
 {
   template<class Builder>
-  void operator()(Builder &builder)
+  void operator()(Builder& builder)
   {
     builder.template add_consumer<Message>(std::move(c));
   }
@@ -19,7 +19,7 @@ struct add_consumer_config
 struct add_address_config
 {
   template<class Builder>
-  void operator()(Builder &builder)
+  void operator()(Builder& builder)
   {
     builder.add_address(std::move(address));
   }
@@ -29,7 +29,7 @@ struct add_address_config
 
 namespace icon::api {
 template<class... Config>
-auto setup_default_endpoint(Config &&...configs)
+auto setup_default_endpoint(Config&&... configs)
 {
   auto builder = icon::details::BasicEndpointBuilder{};
 
@@ -39,7 +39,7 @@ auto setup_default_endpoint(Config &&...configs)
 }
 
 template<class Message, class Consumer>
-auto consumer(Consumer &&consumer)
+auto consumer(Consumer&& consumer)
 {
   return icon::details::add_consumer_config<Message, Consumer>{
     std::forward<Consumer>(consumer)

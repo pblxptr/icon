@@ -12,8 +12,8 @@
 
 namespace {
 template<class Endpoint, class Message>
-auto build_request(const icon::details::core::Identity &identity,
-  Message &&message)
+auto build_request(const icon::details::core::Identity& identity,
+  Message&& message)
 {
   // auto parser = icon::details::Parser<typename Endpoint::Protocol_t>{};
   // parser.set<icon::details::fields::Identity>(serialize<Endpoint::Raw_t>(Endpoint::ZmqData(identity)));
@@ -47,15 +47,15 @@ public:
       icon::details::fields::Body>>;
 
   BasicEndpoint(
-    zmq::context_t &zctx,
-    boost::asio::io_context &bctx,
+    zmq::context_t& zctx,
+    boost::asio::io_context& bctx,
     std::vector<std::string> addresses,
     std::unordered_map<size_t, std::unique_ptr<ConsumerHandlerBase_t>>
       handlers);
 
   template<class Message>
-  awaitable<void> async_send(icon::details::core::Identity &identity,
-    Message &&message)
+  awaitable<void> async_send(icon::details::core::Identity& identity,
+    Message&& message)
   {
     auto request = build_request<Endpoint, Message>(
       identity, std::forward<Message>(message));
@@ -65,8 +65,8 @@ public:
   awaitable<void> run() override;
 
 private:
-  void handle_recv(RawBuffer_t &&);
-  ConsumerHandlerBase_t *find_consumer(const size_t);
+  void handle_recv(RawBuffer_t&&);
+  ConsumerHandlerBase_t* find_consumer(const size_t);
 
 private:
   std::unordered_map<size_t, std::unique_ptr<ConsumerHandlerBase_t>> handlers_;

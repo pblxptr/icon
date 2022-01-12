@@ -6,13 +6,13 @@ namespace icon::details {
 class BasicEndpointBuilder
 {
 public:
-  void add_address(std::string &&address)
+  void add_address(std::string&& address)
   {
     addresses_.push_back(std::move(address));
   }
 
   template<class Message, class Consumer>
-  void add_consumer(Consumer &&consumer)
+  void add_consumer(Consumer&& consumer)
   {
     const auto msg_number =
       BasicEndpoint::Serializable_t<Message>::message_number();

@@ -11,7 +11,7 @@ public:
     : consumer_{ std::move(consumer) }// TODO: move or forward?????
   {}
 
-  void handle(Endpoint &endpoint, Request &&request)
+  void handle(Endpoint& endpoint, Request&& request)
   {
     auto context =
       MessageContext<Message>{ endpoint, request.identity(), request.header(), request.template body<Message>() };

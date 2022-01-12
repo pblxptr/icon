@@ -46,13 +46,13 @@ class Co_StreamWatcher
   using Flags_t = Flags<ZmqOperation>;
 
 public:
-  Co_StreamWatcher(zmq::socket_t &socket, boost::asio::io_context &context)
+  Co_StreamWatcher(zmq::socket_t& socket, boost::asio::io_context& context)
     : socket_{ socket }, streamd_{ context } {}
 
-  Co_StreamWatcher(const Co_StreamWatcher &) = delete;
-  Co_StreamWatcher &operator=(const Co_StreamWatcher &) = delete;
-  Co_StreamWatcher(Co_StreamWatcher &&) = default;
-  Co_StreamWatcher &operator=(Co_StreamWatcher &&) = delete;
+  Co_StreamWatcher(const Co_StreamWatcher&) = delete;
+  Co_StreamWatcher& operator=(const Co_StreamWatcher&) = delete;
+  Co_StreamWatcher(Co_StreamWatcher&&) = default;
+  Co_StreamWatcher& operator=(Co_StreamWatcher&&) = delete;
 
   ~Co_StreamWatcher() { stop(); }
 
@@ -118,7 +118,7 @@ private:
   auto context() { return streamd_.get_executor(); }
 
 private:
-  zmq::socket_t &socket_;
+  zmq::socket_t& socket_;
   boost::asio::posix::stream_descriptor streamd_;
   Flags_t flags_;
 };

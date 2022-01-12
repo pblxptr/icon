@@ -11,7 +11,7 @@ template<Deserializable Message>
 class BaseResponse
 {
 public:
-  BaseResponse(Message &&message) : message_{ std::move(message) } {}
+  BaseResponse(Message&& message) : message_{ std::move(message) } {}
 
   template<class T>
   bool message_number_match_for(const size_t message_number) const
@@ -43,12 +43,12 @@ template<Deserializable Message>
 class InternalResponse : public BaseResponse<Message>
 {
 public:
-  InternalResponse(core::Header &&header, Message &&message)
+  InternalResponse(core::Header&& header, Message&& message)
     : BaseResponse<Message>(std::move(message)), header_{ std::move(header) } {}
 
   using BaseResponse<Message>::message;
 
-  const core::Header &header() const { return header_; }
+  const core::Header& header() const { return header_; }
 
   template<class T>
   bool is() const
@@ -65,7 +65,7 @@ template<Deserializable Message>
 class Response : public BaseResponse<Message>
 {
 public:
-  Response(core::Header &&header, Message &&message)
+  Response(core::Header&& header, Message&& message)
     : BaseResponse<Message>(std::move(message)),
       message_number_{ header.message_number() } {}
 

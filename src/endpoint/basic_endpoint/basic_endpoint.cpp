@@ -3,7 +3,7 @@
 
 namespace {
 template<class RawBuffer, class Protocol, class Request, class Deserializable>
-auto extract_request(RawBuffer &&buffer)
+auto extract_request(RawBuffer&& buffer)
 {
   auto [raw_identity, raw_header, raw_body] =
     icon::details::Parser<Protocol>{ std::move(buffer) }
@@ -23,14 +23,14 @@ auto extract_request(RawBuffer &&buffer)
 
 namespace icon::details {
 BasicEndpoint::BasicEndpoint(
-  zmq::context_t &zctx,
-  boost::asio::io_context &bctx,
+  zmq::context_t& zctx,
+  boost::asio::io_context& bctx,
   std::vector<std::string> addresses,
   std::unordered_map<size_t, std::unique_ptr<ConsumerHandlerBase_t>> handlers)
   : BaseEndpoint(zmq::socket_t{ zctx, zmq::socket_type::router }, bctx),
     handlers_{ std::move(handlers) }
 {
-  for (const auto &addr : addresses) {
+  for (const auto& addr : addresses) {
     socket_.bind(addr);
   }
 }
@@ -43,13 +43,13 @@ awaitable<void> BasicEndpoint::run()
   }
 }
 
-void BasicEndpoint::handle_recv(RawBuffer_t &&buffer)
+void BasicEndpoint::handle_recv(RawBuffer_t&& buffer)
 {
   auto request =
     extract_request<RawBuffer_t, Protocol_t, Request_t, Deserializable_t>(
       std::move(buffer));
 
-  const auto &header = request.header();
+  const auto& header = request.header();
   auto consumer = find_consumer(header.message_number());
   if (!consumer)
     return;
@@ -57,7 +57,7 @@ void BasicEndpoint::handle_recv(RawBuffer_t &&buffer)
   consumer->handle(*this, std::move(request));
 }
 
-BasicEndpoint::ConsumerHandlerBase_t *
+BasicEndpoint::ConsumerHandlerBase_t*
   BasicEndpoint::find_consumer(const size_t message_number)
 {
   if (!handlers_.contains(message_number)) {

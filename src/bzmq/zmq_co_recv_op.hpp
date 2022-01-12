@@ -19,7 +19,7 @@ namespace icon::details {
 class ZmqCoRecvOp
 {
 public:
-  ZmqCoRecvOp(zmq::socket_t &socket, Co_StreamWatcher &watcher)
+  ZmqCoRecvOp(zmq::socket_t& socket, Co_StreamWatcher& watcher)
     : socket_{ socket }, watcher_{ watcher } {}
 
   template<class RawBuffer>
@@ -56,7 +56,7 @@ public:
     co_return buffer;
   }
 
-private : zmq::socket_t &socket_;
-  Co_StreamWatcher &watcher_;
+private : zmq::socket_t& socket_;
+  Co_StreamWatcher& watcher_;
 };
 }// namespace icon::details

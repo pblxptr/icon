@@ -40,13 +40,13 @@ class BasicClient
   using InternalResponse_t = InternalResponse<Deserializable_t>;
 
 public:
-  BasicClient(zmq::context_t &zctx, boost::asio::io_context &bctx)
+  BasicClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
     : socket_{ zctx, zmq::socket_type::dealer }, watcher_{ socket_, bctx }
   {
     spdlog::debug("BasicClient ctor");
   }
 
-  awaitable<bool> async_connect(const char *endpoint)
+  awaitable<bool> async_connect(const char* endpoint)
   {
     if (is_connected_) {
       co_return true;
@@ -61,7 +61,7 @@ public:
   }
 
   template<MessageToSend Message>
-  awaitable<Response_t> async_send(Message &&message)
+  awaitable<Response_t> async_send(Message&& message)
   {
     co_return co_await async_send_with_response<Response_t>(
       std::forward<Message>(message));
@@ -79,7 +79,7 @@ private:
   }
 
   template<class Response, MessageToSend Message>
-  awaitable<Response> async_send_with_response(Message &&message)
+  awaitable<Response> async_send_with_response(Message&& message)
   {
     auto header = core::Header{ Serializable_t<Message>::message_number() };
 
@@ -88,7 +88,7 @@ private:
   }
 
   template<class Message>
-  awaitable<void> async_do_send(core::Header &&header, Message &&message)
+  awaitable<void> async_do_send(core::Header&& header, Message&& message)
   {
     auto zmq_send_op = ZmqCoSendOp{ socket_, watcher_ };
     co_await zmq_send_op.async_send(
@@ -106,7 +106,7 @@ private:
   }
 
   template<Serializable Header, Serializable Message>
-  RawBuffer_t build_raw_buffer(Header &&header, Message &&message)
+  RawBuffer_t build_raw_buffer(Header&& header, Message&& message)
   {
     auto parser = Parser<Protocol_t>();
     parser.set<fields::Header>(header.serialize());
@@ -116,7 +116,7 @@ private:
   }
 
   template<class Response>
-  auto parse_raw_buffer_with_response(RawBuffer_t &&raw_buffer)
+  auto parse_raw_buffer_with_response(RawBuffer_t&& raw_buffer)
   {
     auto parser = Parser<Protocol_t>(std::move(raw_buffer));
 

@@ -43,7 +43,7 @@ void server()
 
   co_spawn(context::boost(), endpoint->run(), detached);
 
-  auto &ctx = context::boost();
+  auto& ctx = context::boost();
   using work_guard_type =
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
   work_guard_type work_guard(ctx.get_executor());
@@ -68,7 +68,7 @@ auto make_message()
   return parts;
 }
 
-void client(const char *endpoint)
+void client(const char* endpoint)
 {
   auto bctx = boost::asio::io_context{};
   auto zctx = zmq::context_t{};

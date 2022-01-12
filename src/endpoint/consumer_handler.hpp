@@ -6,6 +6,6 @@ class ConsumerHandler
 {
 public:
   virtual ~ConsumerHandler() = default;
-  virtual void handle(Endpoint &, Request &&) = 0;
+  virtual void handle(Endpoint&, Request&&) = 0;
 };
 }// namespace icon::details

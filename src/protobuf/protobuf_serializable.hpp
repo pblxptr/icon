@@ -17,10 +17,10 @@ class BasicSerializable
 public:
   BasicSerializable(Data message) : data_{ std::move(message) } {}
 
-  BasicSerializable(const BasicSerializable &) = delete;
-  BasicSerializable &operator=(const BasicSerializable &) = delete;
-  BasicSerializable(BasicSerializable &&) = default;
-  BasicSerializable &operator=(BasicSerializable &&) = default;
+  BasicSerializable(const BasicSerializable&) = delete;
+  BasicSerializable& operator=(const BasicSerializable&) = delete;
+  BasicSerializable(BasicSerializable&&) = default;
+  BasicSerializable& operator=(BasicSerializable&&) = default;
 
   zmq::message_t serialize() const
   {
@@ -63,7 +63,7 @@ class ProtobufSerializable<core::Header>
 public:
   using BasicSerializable<icon::transport::Header>::serialize;
 
-  explicit ProtobufSerializable(const core::Header &header)
+  explicit ProtobufSerializable(const core::Header& header)
     : BasicSerializable<icon::transport::Header>(convert(header)) {}
 
 private:
@@ -73,7 +73,7 @@ private:
    * @param header Header to serialize
    * @return icon::transport::Header
    */
-  icon::transport::Header convert(const core::Header &header)
+  icon::transport::Header convert(const core::Header& header)
   {
     auto th = icon::transport::Header{};
     th.set_message_number(header.message_number());
