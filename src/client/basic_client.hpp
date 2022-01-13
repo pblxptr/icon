@@ -107,7 +107,7 @@ private:
     auto zmq_recv_op = ZmqCoRecvOp{ socket_, watcher_ };
     auto raw_buffer = co_await zmq_recv_op.async_receive<icon::details::transport::RawBuffer_t>();
 
-    co_return Response<Deserializer_t>(std::move(raw_buffer));
+    co_return Response<Deserializer_t>::create(std::move(raw_buffer));
   }
 
 private:

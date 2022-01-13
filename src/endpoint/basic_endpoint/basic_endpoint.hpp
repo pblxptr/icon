@@ -10,20 +10,6 @@
 #include <protobuf/protobuf_serialization.hpp>
 #include <utils/context.hpp>
 
-namespace {
-template<class Endpoint, class Message>
-auto build_request(const icon::details::core::Identity& identity,
-  Message&& message)
-{
-  // auto parser = icon::details::Parser<typename Endpoint::Protocol_t>{};
-  // parser.set<icon::details::fields::Identity>(serialize<Endpoint::Raw_t>(Endpoint::ZmqData(identity)));
-  // // parser.set<icon::details::fields::Header>()
-  // parser.set<icon::details::fields::Body>(serialize<Endpoint::Raw_t>(message));
-
-  // return parser.parse();
-  return 1;
-}
-}// namespace
 namespace icon::details {
 
 class BasicEndpoint : public BaseEndpoint
@@ -36,15 +22,9 @@ public:
     icon::details::serialization::protobuf::ProtobufSerializable<Message>;
   using Deserializable_t =
     icon::details::serialization::protobuf::ProtobufDeserializable;
-  using Request_t = icon::details::InternalRequest<Deserializable_t>;
+  using Deserializer_t = icon::details::serialization::protobuf::ProtobufDeserializer;
+  using Request_t = IncomingRequest<Deserializer_t>;
   using ConsumerHandlerBase_t = ConsumerHandler<BasicEndpoint, Request_t>;
-
-  using Protocol_t = icon::details::Protocol<
-    Raw_t,
-    RawBuffer_t,
-    icon::details::DataLayout<icon::details::fields::Identity,
-      icon::details::fields::Header,
-      icon::details::fields::Body>>;
 
   BasicEndpoint(
     zmq::context_t& zctx,
@@ -57,9 +37,9 @@ public:
   awaitable<void> async_send(icon::details::core::Identity& identity,
     Message&& message)
   {
-    auto request = build_request<Endpoint, Message>(
-      identity, std::forward<Message>(message));
-    co_await async_send_base(std::move(request));
+    // auto request = build_request<Endpoint, Message>(
+    //   identity, std::forward<Message>(message));
+    // co_await async_send_base(std::move(request));
   }
 
   awaitable<void> run() override;

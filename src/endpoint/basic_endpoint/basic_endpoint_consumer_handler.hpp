@@ -14,7 +14,7 @@ public:
   void handle(Endpoint& endpoint, Request&& request)
   {
     auto context =
-      MessageContext<Message>{ endpoint, request.identity(), request.header(), request.template body<Message>() };
+      MessageContext<Message>{ endpoint, request.identity(), request.header(), request.template get<Message>() };
     consumer_(context);
   }
 

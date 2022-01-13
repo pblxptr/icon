@@ -1,5 +1,6 @@
 #include <endpoint/basic_endpoint/basic_endpoint.hpp>
 #include <utils/support.hpp>
+#include <endpoint/request.hpp>
 
 namespace {
 template<class RawBuffer, class Protocol, class Request, class Deserializable>
@@ -45,10 +46,7 @@ awaitable<void> BasicEndpoint::run()
 
 void BasicEndpoint::handle_recv(RawBuffer_t&& buffer)
 {
-  auto request =
-    extract_request<RawBuffer_t, Protocol_t, Request_t, Deserializable_t>(
-      std::move(buffer));
-
+  auto request = Request_t::create(std::move(buffer));
   const auto& header = request.header();
   auto consumer = find_consumer(header.message_number());
   if (!consumer)
