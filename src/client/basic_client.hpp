@@ -40,7 +40,8 @@ auto response = co_await requset.send();
 */
 
 namespace icon::details {
-class BasicClient {
+class BasicClient
+{
   using ConnectionEstablishReq_t = icon::transport::ConnectionEstablishReq;
   using ConnectionEstablishCfm_t = icon::transport::ConnectionEstablishCfm;
   using Serializer_t = icon::details::serialization::protobuf::ProtobufSerializer;
@@ -48,12 +49,14 @@ class BasicClient {
   using Response_t = Response<Deserializer_t>;
 
 public:
-  BasicClient(zmq::context_t &zctx, boost::asio::io_context &bctx)
-      : socket_{zctx, zmq::socket_type::dealer}, watcher_{socket_, bctx} {
+  BasicClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
+    : socket_{ zctx, zmq::socket_type::dealer }, watcher_{ socket_, bctx }
+  {
     spdlog::debug("BasicClient ctor");
   }
 
-  awaitable<bool> async_connect(const char *endpoint) {
+  awaitable<bool> async_connect(const char* endpoint)
+  {
     if (is_connected_) {
       co_return true;
     }
@@ -66,25 +69,28 @@ public:
     co_return is_connected_;
   }
 
-  template <MessageToSend Message>
-  awaitable<Response_t> async_send(Message &&message) {
+  template<MessageToSend Message>
+  awaitable<Response_t> async_send(Message&& message)
+  {
     co_return co_await async_send_with_response(
-        std::forward<Message>(message));
+      std::forward<Message>(message));
   }
 
 private:
-  awaitable<void> init_connection_async() {
+  awaitable<void> init_connection_async()
+  {
     const auto response = co_await async_send_with_response(
-        ConnectionEstablishReq_t{});
+      ConnectionEstablishReq_t{});
 
     if (!response.is<ConnectionEstablishCfm_t>()) {
       throw std::runtime_error("Connection establish failed");
     }
   }
 
-  template <MessageToSend Message>
-  awaitable<Response_t> async_send_with_response(Message &&message) {
-    auto zmq_send_op = ZmqCoSendOp{socket_, watcher_};
+  template<MessageToSend Message>
+  awaitable<Response_t> async_send_with_response(Message&& message)
+  {
+    auto zmq_send_op = ZmqCoSendOp{ socket_, watcher_ };
     auto request = Request<Message, Serializer_t>(std::move(message));
     auto buffer = std::move(request).build();
 
@@ -92,9 +98,9 @@ private:
     co_return co_await async_receive();
   }
 
-  awaitable<Response_t> async_receive() {
-
-    auto zmq_recv_op = ZmqCoRecvOp{socket_, watcher_};
+  awaitable<Response_t> async_receive()
+  {
+    auto zmq_recv_op = ZmqCoRecvOp{ socket_, watcher_ };
     auto raw_buffer = co_await zmq_recv_op.async_receive<icon::details::protocol::RawBuffer_t>();
 
     co_return Response<Deserializer_t>(std::move(raw_buffer));
@@ -103,8 +109,6 @@ private:
 private:
   zmq::socket_t socket_;
   Co_StreamWatcher watcher_;
-  bool is_connected_{false};
+  bool is_connected_{ false };
 };
-}; // namespace icon::details
-
-
+};// namespace icon::details

@@ -2,24 +2,21 @@
 
 #include <core/protocol.hpp>
 
-namespace icon::details
-{
+namespace icon::details {
 template<class Message, class Serializer>
 class Request
 {
   using Protocol_t = icon::details::Protocol<
-      icon::details::protocol::Raw_t,
-      icon::details::protocol::RawBuffer_t,
-      icon::details::DataLayout<
-        icon::details::fields::Header,
-        icon::details::fields::Body
-      >
-    >;
+    icon::details::protocol::Raw_t,
+    icon::details::protocol::RawBuffer_t,
+    icon::details::DataLayout<
+      icon::details::fields::Header,
+      icon::details::fields::Body>>;
+
 public:
   explicit Request(Message message)
-    : header_{core::Header{Serializer:: template message_number_for<Message>()}}
-    , message_{std::move(message)}
-    {}
+    : header_{ core::Header{ Serializer::template message_number_for<Message>() } }, message_{ std::move(message) }
+  {}
 
   auto build() &
   {
@@ -44,4 +41,4 @@ private:
   Message message_;
 };
 
-}
+}// namespace icon::details

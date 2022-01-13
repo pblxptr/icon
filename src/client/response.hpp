@@ -12,37 +12,32 @@ template<class Deserializer>
 class Response
 {
   using Protocol_t = icon::details::Protocol<
-      icon::details::protocol::Raw_t,
-      icon::details::protocol::RawBuffer_t,
-      icon::details::DataLayout<
-        icon::details::fields::Header,
-        icon::details::fields::Body
-      >
-    >;
+    icon::details::protocol::Raw_t,
+    icon::details::protocol::RawBuffer_t,
+    icon::details::DataLayout<
+      icon::details::fields::Header,
+      icon::details::fields::Body>>;
+
 public:
   explicit Response(icon::details::protocol::RawBuffer_t buffer)
   {
     auto parser = Parser<Protocol_t>(std::move(buffer));
-    auto [header, body] = std::move(parser).template extract<
-        icon::details::fields::Header,
-        icon::details::fields::Body
-    >();
+    auto [header, body] = std::move(parser).template extract<icon::details::fields::Header, icon::details::fields::Body>();
 
-    header_ = Deserializer:: template deserialize<core::Header>(header);
+    header_ = Deserializer::template deserialize<core::Header>(header);
     body_ = std::move(body);
   }
 
   template<class Message>
   bool is() const
   {
-    return Deserializer:: template message_number_for<Message>() == header_.message_number();
+    return Deserializer::template message_number_for<Message>() == header_.message_number();
   }
 
 private:
   core::Header header_;
   icon::details::protocol::Raw_t body_;
 };
-
 
 
 // template<Deserializable Message>
