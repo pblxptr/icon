@@ -72,6 +72,10 @@ public:
   template<MessageToSend Message>
   awaitable<Response_t> async_send(Message&& message)
   {
+    if (not is_connected_) {
+      throw std::runtime_error("Client not connected");
+    }
+
     co_return co_await async_send_with_response(
       std::forward<Message>(message));
   }
@@ -101,7 +105,7 @@ private:
   awaitable<Response_t> async_receive()
   {
     auto zmq_recv_op = ZmqCoRecvOp{ socket_, watcher_ };
-    auto raw_buffer = co_await zmq_recv_op.async_receive<icon::details::protocol::RawBuffer_t>();
+    auto raw_buffer = co_await zmq_recv_op.async_receive<icon::details::transport::RawBuffer_t>();
 
     co_return Response<Deserializer_t>(std::move(raw_buffer));
   }

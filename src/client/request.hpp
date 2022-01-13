@@ -7,8 +7,8 @@ template<class Message, class Serializer>
 class Request
 {
   using Protocol_t = icon::details::Protocol<
-    icon::details::protocol::Raw_t,
-    icon::details::protocol::RawBuffer_t,
+    icon::details::transport::Raw_t,
+    icon::details::transport::RawBuffer_t,
     icon::details::DataLayout<
       icon::details::fields::Header,
       icon::details::fields::Body>>;

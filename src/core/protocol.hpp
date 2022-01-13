@@ -7,11 +7,6 @@
 
 namespace icon::details {
 
-namespace protocol {
-  using Raw_t = zmq::message_t;
-  using RawBuffer_t = std::vector<Raw_t>;// Consider changing to transport
-}// namespace protocol
-
 namespace fields {
   struct Identity
   {
