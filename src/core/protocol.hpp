@@ -7,6 +7,11 @@
 
 namespace icon::details {
 
+namespace protocol {
+  using Raw_t = zmq::message_t;
+  using RawBuffer_t = std::vector<Raw_t>; //Consider changing to transport
+}
+
 namespace fields {
   struct Identity
   {
@@ -78,7 +83,7 @@ struct Parser
   }
 
   template<class Field>
-  void set(Raw raw)
+  void put(Raw raw)
   {
     constexpr auto index =
       icon::traits::IndexOf<std::decay_t<Field>, DataLayoutTypes>::value();

@@ -1,0 +1,47 @@
+#pragma once
+
+#include <core/protocol.hpp>
+
+namespace icon::details
+{
+template<class Message, class Serializer>
+class Request
+{
+  using Protocol_t = icon::details::Protocol<
+      icon::details::protocol::Raw_t,
+      icon::details::protocol::RawBuffer_t,
+      icon::details::DataLayout<
+        icon::details::fields::Header,
+        icon::details::fields::Body
+      >
+    >;
+public:
+  explicit Request(Message message)
+    : header_{core::Header{Serializer:: template message_number_for<Message>()}}
+    , message_{std::move(message)}
+    {}
+
+  auto build() &
+  {
+    auto parser = Parser<Protocol_t>{};
+    parser.put<fields::Header>(Serializer::serialize(header_));
+    parser.put<fields::Body>(Serializer::serialize(message_));
+
+    return parser.parse();
+  }
+
+  auto build() &&
+  {
+    auto parser = Parser<Protocol_t>{};
+    parser.put<fields::Header>(Serializer::serialize(header_));
+    parser.put<fields::Body>(Serializer::serialize(message_));
+
+    return std::move(parser).parse();
+  }
+
+private:
+  core::Header header_;
+  Message message_;
+};
+
+}
