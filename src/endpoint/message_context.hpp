@@ -3,6 +3,9 @@
 #include <endpoint/basic_endpoint/basic_endpoint.hpp>
 #include <icon.hpp>
 
+// TODO: Disable copy and move operation
+// TODO: Consider changing all properites to request
+
 namespace icon {
 template<class Message>
 class MessageContext
@@ -20,7 +23,7 @@ public:
   template<MessageToSend ResponseMessage>
   awaitable<void> async_respond(ResponseMessage&& message)
   {
-    co_await endpoint_.async_respond(std::forward<ResponseMessage>(message));
+    co_await endpoint_.async_respond(identity_, std::forward<ResponseMessage>(message));
   }
 
 private:

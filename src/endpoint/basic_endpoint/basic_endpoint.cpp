@@ -2,26 +2,6 @@
 #include <utils/support.hpp>
 #include <endpoint/request.hpp>
 
-namespace {
-template<class RawBuffer, class Protocol, class Request, class Deserializable>
-auto extract_request(RawBuffer&& buffer)
-{
-  auto [raw_identity, raw_header, raw_body] =
-    icon::details::Parser<Protocol>{ std::move(buffer) }
-      .template extract<// TODO: Temp created. Take a look at this
-        icon::details::fields::Identity,
-        icon::details::fields::Header,
-        icon::details::fields::Body>();
-
-  auto identity = icon::details::core::Identity{ raw_identity.to_string() };
-  auto header = Deserializable{ std::move(raw_header) }
-                  .template deserialize<icon::details::core::Header>();
-  auto body = Deserializable{ std::move(raw_body) };
-
-  return Request{ std::move(identity), std::move(header), std::move(body) };
-}
-}// namespace
-
 namespace icon::details {
 BasicEndpoint::BasicEndpoint(
   zmq::context_t& zctx,
@@ -40,19 +20,20 @@ awaitable<void> BasicEndpoint::run()
 {
   while (true) {
     auto buffer = co_await async_recv_base();
-    handle_recv(std::move(buffer));
+    co_await handle_recv(std::move(buffer));
   }
 }
 
-void BasicEndpoint::handle_recv(RawBuffer_t&& buffer)
+awaitable<void> BasicEndpoint::handle_recv(RawBuffer_t&& buffer)
 {
   auto request = Request_t::create(std::move(buffer));
+
   const auto& header = request.header();
   auto consumer = find_consumer(header.message_number());
   if (!consumer)
-    return;
+    co_return;
 
-  consumer->handle(*this, std::move(request));
+  co_await consumer->handle(*this, std::move(request));
 }
 
 BasicEndpoint::ConsumerHandlerBase_t*

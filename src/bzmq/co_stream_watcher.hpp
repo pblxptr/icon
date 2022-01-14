@@ -6,30 +6,17 @@
 #include <utils/flags.hpp>
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
-
-namespace posix = boost::asio::posix;
-
-#ifdef __GNU__
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
 
-using boost::asio::awaitable;
-using boost::asio::co_spawn;
-using boost::asio::detached;
-using boost::asio::use_awaitable;
-#else
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/co_spawn.hpp>
-
-using boost::asio::awaitable;
-using boost::asio::co_spawn;
-using boost::asio::detached;
-using boost::asio::use_awaitable;
-
-#endif
 
 namespace {
-}
+namespace posix = boost::asio::posix;
+using boost::asio::awaitable;
+using boost::asio::co_spawn;
+using boost::asio::detached;
+using boost::asio::use_awaitable;
+}// namespace
 
 namespace icon::details {
 class Co_StreamWatcher
@@ -58,7 +45,7 @@ public:
 
   awaitable<bool> async_wait_receive(bool autonomous_mode = true)
   {
-    spdlog::debug("StreamWatcher::async_wait_receive");
+    spdlog::debug("StreamWatcher: async_wait_receive()");
 
     auto result =
       co_await setup_async_wait(ZmqOperation::Read, Wait_t::wait_read);
@@ -72,7 +59,7 @@ public:
 
   awaitable<bool> async_wait_send()
   {
-    spdlog::debug("StreamWatcher::async_wait_send");
+    spdlog::debug("StreamWatcher: async_wait_send()");
 
     auto result =
       co_await setup_async_wait(ZmqOperation::Write, Wait_t::wait_write);

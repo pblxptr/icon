@@ -5,6 +5,9 @@
 
 namespace icon::details::core {
 
+// TODO: Consider adding additional field size_t message number and template parameter Deserializer.
+// Then 'is' and 'get' functions could be refactored and there would be
+// no need to implement 'is' and 'get' functions in derived classes.
 class UnknownMessage
 {
 public:

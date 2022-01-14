@@ -23,7 +23,7 @@ public:
   template<class RawBuffer>
   awaitable<void> async_send(RawBuffer&& buffer)
   {
-    spdlog::debug("ZmqCoSendOp: async_send for mulipart");
+    spdlog::debug("ZmqCoSendOp: async_send() for mulipart message.");
 
     const auto ret = co_await watcher_.async_wait_send();
     assert(ret);
@@ -37,7 +37,7 @@ public:
   awaitable<void> async_send(
     RawBuffer&& buffer) requires std::is_same_v<RawBuffer, zmq::message_t>
   {
-    spdlog::debug("ZmqCoSendOp: async_send for single");
+    spdlog::debug("ZmqCoSendOp: async_send() for single.");
 
     const auto ret = co_await watcher_.async_wait_send();
     assert(ret);

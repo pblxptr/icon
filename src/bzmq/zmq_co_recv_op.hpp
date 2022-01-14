@@ -25,7 +25,7 @@ public:
   template<class RawBuffer>
   awaitable<RawBuffer> async_receive()
   {
-    spdlog::debug("ZmqCoSendOp: async_receive for mulipart");
+    spdlog::debug("ZmqCoSendOp: async_receive() for mulipart.");
 
     auto ret = co_await watcher_.async_wait_receive();
     assert(ret);
@@ -42,7 +42,7 @@ public:
   awaitable<RawBuffer>
     async_receive() requires std::is_same_v<RawBuffer, zmq::message_t>
   {
-    spdlog::debug("ZmqCoSendOp: async_receive for single");
+    spdlog::debug("ZmqCoSendOp: async_receive() for single message.");
 
     auto ret = co_await watcher_.async_wait_receive();
     if (not ret) {

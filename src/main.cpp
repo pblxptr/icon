@@ -29,15 +29,19 @@ void server()
   using namespace icon::details;
   using namespace icon::transport;
 
-  auto endpoint = icon::api::setup_default_endpoint(
-    icon::api::address(ZmqServerEndpoint),
-    icon::api::consumer<ConnectionEstablishReq>(
-      [](MessageContext<ConnectionEstablishReq> req) {
+  auto endpoint = icon::setup_default_endpoint(
+    icon::address(ZmqServerEndpoint),
+    icon::consumer<ConnectionEstablishReq>(
+      [](MessageContext<ConnectionEstablishReq> context) -> awaitable<void> {
         spdlog::debug("ConnectionEstablishReq");
+        auto& req = context.message();
+        auto rsp = ConnectionEstablishCfm{};
+        co_await context.async_respond(std::move(rsp));
       }),
-    icon::api::consumer<HeartbeatReq>(
-      [](MessageContext<HeartbeatReq> req) {
+    icon::consumer<HeartbeatReq>(
+      [](MessageContext<HeartbeatReq> context) -> awaitable<void> {
         spdlog::debug("HeartbeatReq");
+        co_return;
       }))
                     .build();
 

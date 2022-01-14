@@ -2,7 +2,7 @@
 
 #include <metadata.pb.h>
 #include <icon.pb.h>
-
+// TODO: Add basic serializer, and move therer serialization of core::Identity
 namespace icon::details::serialization::protobuf {
 class ProtobufData
 {
@@ -34,6 +34,11 @@ public:
     th.set_message_number(header.message_number());
 
     return serialize(th);
+  }
+
+  static zmq::message_t serialize(const core::Identity& identity)
+  {
+    return zmq::message_t{ identity.value() };
   }
 };
 

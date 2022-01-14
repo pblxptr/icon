@@ -31,7 +31,7 @@ public:
       handlers);
 
   template<MessageToSend Message>
-  awaitable<void> async_respond(const icon::details::core::Identity&& identity,
+  awaitable<void> async_respond(const icon::details::core::Identity& identity,
     Message&& message)
   {
     auto response = EndpointResponse<Message, Serializer_t>{ identity, std::forward<Message>(message) };
@@ -41,7 +41,7 @@ public:
   awaitable<void> run() override;
 
 private:
-  void handle_recv(RawBuffer_t&&);
+  awaitable<void> handle_recv(RawBuffer_t&&);
   ConsumerHandlerBase_t* find_consumer(const size_t);
 
 private:

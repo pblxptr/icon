@@ -3,19 +3,21 @@
 #include <endpoint/consumer_handler.hpp>
 #include <endpoint/message_context.hpp>
 namespace icon::details {
+
 template<class Endpoint, class Request, class Message, class Consumer>
 class BasicEndpointConsumerHandler : public ConsumerHandler<Endpoint, Request>
 {
+
 public:
   explicit BasicEndpointConsumerHandler(Consumer consumer)
-    : consumer_{ std::move(consumer) }// TODO: move or forward?????
+    : consumer_{ std::move(consumer) }
   {}
 
-  void handle(Endpoint& endpoint, Request&& request)
+  awaitable<void> handle(Endpoint& endpoint, Request&& request)
   {
     auto context =
       MessageContext<Message>{ endpoint, request.identity(), request.header(), request.template get<Message>() };
-    consumer_(context);
+    co_await consumer_(context);
   }
 
 private:

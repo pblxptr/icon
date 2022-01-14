@@ -27,7 +27,7 @@ struct add_address_config
 };
 }// namespace icon::details
 
-namespace icon::api {
+namespace icon {
 template<class... Config>
 auto setup_default_endpoint(Config&&... configs)
 {
@@ -50,4 +50,4 @@ auto address(std::string address)
 {
   return icon::details::add_address_config{ std::move(address) };
 }
-}// namespace icon::api
+}// namespace icon

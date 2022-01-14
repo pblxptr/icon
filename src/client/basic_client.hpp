@@ -57,6 +57,8 @@ public:
 
   awaitable<bool> async_connect(const char* endpoint)
   {
+    spdlog::debug("BasicClient: connecting to endpoint: {}, is_connected: {}", endpoint, is_connected_);
+
     if (is_connected_) {
       co_return true;
     }
@@ -72,6 +74,8 @@ public:
   template<MessageToSend Message>
   awaitable<Response_t> async_send(Message&& message)
   {
+    spdlog::debug("BasicClient sending message: {}", message);
+
     if (not is_connected_) {
       throw std::runtime_error("Client not connected");
     }
@@ -89,6 +93,10 @@ private:
     if (!response.is<ConnectionEstablishCfm_t>()) {
       throw std::runtime_error("Connection establish failed");
     }
+
+    spdlog::debug("BasicClient: connected");
+
+    is_connected_ = true;
   }
 
   template<MessageToSend Message>
@@ -104,6 +112,8 @@ private:
 
   awaitable<Response_t> async_receive()
   {
+    spdlog::debug("Basic client: async_receive");
+
     auto zmq_recv_op = ZmqCoRecvOp{ socket_, watcher_ };
     auto raw_buffer = co_await zmq_recv_op.async_receive<icon::details::transport::RawBuffer_t>();
 
