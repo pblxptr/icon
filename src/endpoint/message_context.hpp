@@ -20,7 +20,7 @@ public:
   template<MessageToSend ResponseMessage>
   awaitable<void> async_respond(ResponseMessage&& message)
   {
-    co_await endpoint_.async_send(std::forward<ResponseMessage>(message));
+    co_await endpoint_.async_respond(std::forward<ResponseMessage>(message));
   }
 
 private:

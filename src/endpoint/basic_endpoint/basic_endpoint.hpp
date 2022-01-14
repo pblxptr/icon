@@ -6,6 +6,7 @@
 #include <endpoint/consumer_handler.hpp>
 #include <endpoint/endpoint.hpp>
 #include <endpoint/request.hpp>
+#include <endpoint/response.hpp>
 #include <icon.hpp>
 #include <protobuf/protobuf_serialization.hpp>
 #include <utils/context.hpp>
@@ -17,13 +18,9 @@ class BasicEndpoint : public BaseEndpoint
 public:
   using BaseEndpoint::Raw_t;
   using BaseEndpoint::RawBuffer_t;
-  template<class Message>
-  using Serializable_t =
-    icon::details::serialization::protobuf::ProtobufSerializable<Message>;
-  using Deserializable_t =
-    icon::details::serialization::protobuf::ProtobufDeserializable;
+  using Serializer_t = icon::details::serialization::protobuf::ProtobufSerializer;
   using Deserializer_t = icon::details::serialization::protobuf::ProtobufDeserializer;
-  using Request_t = IncomingRequest<Deserializer_t>;
+  using Request_t = EndpointRequest<Deserializer_t>;
   using ConsumerHandlerBase_t = ConsumerHandler<BasicEndpoint, Request_t>;
 
   BasicEndpoint(
@@ -33,13 +30,12 @@ public:
     std::unordered_map<size_t, std::unique_ptr<ConsumerHandlerBase_t>>
       handlers);
 
-  template<class Message>
-  awaitable<void> async_send(icon::details::core::Identity& identity,
+  template<MessageToSend Message>
+  awaitable<void> async_respond(const icon::details::core::Identity&& identity,
     Message&& message)
   {
-    // auto request = build_request<Endpoint, Message>(
-    //   identity, std::forward<Message>(message));
-    // co_await async_send_base(std::move(request));
+    auto response = EndpointResponse<Message, Serializer_t>{ identity, std::forward<Message>(message) };
+    co_await async_send_base(std::move(response).build());
   }
 
   awaitable<void> run() override;

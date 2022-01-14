@@ -3,14 +3,13 @@
 #include <cstdint>
 #include <core/transport.hpp>
 
-namespace icon::details::core
-{
+namespace icon::details::core {
 
 class UnknownMessage
 {
 public:
   explicit UnknownMessage(transport::Raw_t data)
-    : data_{std::move(data)}
+    : data_{ std::move(data) }
   {}
   template<class Deserializer, class Message>
   bool is(const size_t msg_number) const
@@ -23,7 +22,8 @@ public:
   {
     return Deserializer::template deserialize<Destination>(data_);
   }
+
 private:
   transport::Raw_t data_;
 };
-}
+}// namespace icon::details::core

@@ -15,7 +15,7 @@ public:
   void add_consumer(Consumer&& consumer)
   {
     const auto msg_number =
-      BasicEndpoint::Serializable_t<Message>::message_number();
+      BasicEndpoint::Serializer_t::message_number_for<Message>();
 
     if (handlers_.contains(msg_number)) {
       throw std::invalid_argument(

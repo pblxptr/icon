@@ -21,18 +21,13 @@ class Response : public core::UnknownMessage
       icon::details::fields::Body>>;
 
 public:
-  Response(core::Header header, transport::Raw_t body) : UnknownMessage(std::move(body))
-    , header_{std::move(header)}
+  Response(core::Header header, transport::Raw_t body) : UnknownMessage(std::move(body)), header_{ std::move(header) }
   {}
 
   static Response create(icon::details::transport::RawBuffer_t buffer)
   {
     auto parser = Parser<Protocol_t>(std::move(buffer));
-    auto [header, body] = std::move(parser).template extract<
-      icon::details::fields::Header,
-      icon::details::fields::Body
-      >
-    ();
+    auto [header, body] = std::move(parser).template extract<icon::details::fields::Header, icon::details::fields::Body>();
 
     return Response{
       Deserializer::template deserialize<core::Header>(header),
@@ -53,6 +48,6 @@ public:
   }
 
 private:
-  core::Header header_ {};
+  core::Header header_{};
 };
 }// namespace icon::details

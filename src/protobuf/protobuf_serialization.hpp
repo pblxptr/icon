@@ -1,7 +1,7 @@
 #pragma once
 
-#include <protobuf/protobuf_deserializable.hpp>
-#include <protobuf/protobuf_serializable.hpp>
+#include <metadata.pb.h>
+#include <icon.pb.h>
 
 namespace icon::details::serialization::protobuf {
 class ProtobufData

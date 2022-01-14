@@ -50,23 +50,6 @@ void server()
   ctx.run();
 }
 
-template<class Message>
-auto make_message()
-{
-  auto message_protobuf =
-    icon::details::serialization::protobuf::ProtobufSerializable<Message>{ {} };
-  auto header = icon::transport::Header{};
-  header.set_message_number(message_protobuf.message_number());
-  auto header_protobuf =
-    icon::details::serialization::protobuf::ProtobufSerializable<
-      icon::transport::Header>{ header };
-
-  auto parts = std::vector<zmq::message_t>{};
-  parts.push_back(header_protobuf.serialize());
-  parts.push_back(message_protobuf.serialize());
-
-  return parts;
-}
 
 void client(const char* endpoint)
 {
