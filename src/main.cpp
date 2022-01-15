@@ -52,7 +52,7 @@ void s1()
 
         co_await context.async_respond(std::move(rsp));
       }))
-      .build();
+    .build();
 
   co_spawn(context::boost(), endpoint->run(), detached);
 }
@@ -85,7 +85,7 @@ void s2()
 
         co_await context.async_respond(std::move(rsp));
       }))
-      .build();
+                           .build();
 
   co_spawn(context::boost(), endpoint->run(), detached);
 }
@@ -112,8 +112,7 @@ awaitable<void> run_client_for_s1(icon::details::BasicClient& client, const char
 {
   co_await client.async_connect(endpoint);
 
-  for (size_t i = 0; i < NumberOfMessages; i++)
-  {
+  for (size_t i = 0; i < NumberOfMessages; i++) {
     auto seq_req = icon::transport::TestSeqReq{};
     seq_req.set_seq(i);
 
@@ -132,8 +131,7 @@ awaitable<void> run_client_for_s2(icon::details::BasicClient& client, const char
 {
   co_await client.async_connect(endpoint);
 
-  for (size_t i = 0; i < NumberOfMessages; i++)
-  {
+  for (size_t i = 0; i < NumberOfMessages; i++) {
     auto seq_req = icon::transport::TestSeqReq{};
     seq_req.set_seq(i);
 
