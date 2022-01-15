@@ -74,8 +74,6 @@ public:
   template<MessageToSend Message>
   awaitable<Response_t> async_send(Message&& message)
   {
-    spdlog::debug("BasicClient sending message: {}", message);
-
     if (not is_connected_) {
       throw std::runtime_error("Client not connected");
     }
