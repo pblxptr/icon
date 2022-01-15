@@ -10,8 +10,8 @@ namespace icon::details {
 class BaseEndpoint : public Endpoint
 {
 protected:
-  using Raw_t       = core::details::transport::Raw_t;
-  using RawBuffer_t = core::details::transport::RawBuffer_t;
+  using Raw_t       = transport::Raw_t;
+  using RawBuffer_t = transport::RawBuffer_t;
 
   BaseEndpoint(zmq::socket_t socket, boost::asio::io_context& bcxt)
     : socket_{ std::move(socket) }, watcher_{ socket_, bcxt },
