@@ -4,13 +4,14 @@
 #include <bzmq/zmq_co_recv_op.hpp>
 #include <bzmq/zmq_co_send_op.hpp>
 #include <endpoint/endpoint.hpp>
+#include <core/transport.hpp>
 
 namespace icon::details {
 class BaseEndpoint : public Endpoint
 {
 protected:
-  using Raw_t = zmq::message_t;
-  using RawBuffer_t = std::vector<Raw_t>;
+  using Raw_t       = core::details::transport::Raw_t;
+  using RawBuffer_t = core::details::transport::RawBuffer_t;
 
   BaseEndpoint(zmq::socket_t socket, boost::asio::io_context& bcxt)
     : socket_{ std::move(socket) }, watcher_{ socket_, bcxt },
