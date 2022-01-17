@@ -11,11 +11,11 @@
 
 
 namespace {
-namespace posix = boost::asio::posix;
-using boost::asio::awaitable;
-using boost::asio::co_spawn;
-using boost::asio::detached;
-using boost::asio::use_awaitable;
+  namespace posix = boost::asio::posix;
+  using boost::asio::awaitable;
+  using boost::asio::co_spawn;
+  using boost::asio::detached;
+  using boost::asio::use_awaitable;
 }// namespace
 
 namespace icon::details {

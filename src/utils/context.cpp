@@ -1,5 +1,7 @@
 #include "context.hpp"
 
+//TODO: Possible to be removed in favor of the use_serivce method.
+
 namespace {
 boost::asio::io_context boost_context{};
 zmq::context_t zmq_context{};
