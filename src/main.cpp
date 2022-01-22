@@ -24,6 +24,10 @@ using boost::asio::use_awaitable;
 
 constexpr auto ZmqServerEndpointS1 = "tcp://127.0.0.1:6667";
 constexpr auto ZmqServerEndpointS2 = "tcp://127.0.0.1:6668";
+
+auto bctx = boost::asio::io_context{};
+auto zctx = zmq::context_t{};
+
 void s1()
 {
   using namespace icon;
@@ -31,6 +35,7 @@ void s1()
   using namespace icon::transport;
 
   static auto endpoint = icon::setup_default_endpoint(
+    icon::use_services(bctx, zctx),
     icon::address(ZmqServerEndpointS1),
     icon::consumer<ConnectionEstablishReq>(
       [](MessageContext<ConnectionEstablishReq> context) -> awaitable<void> {
@@ -52,9 +57,9 @@ void s1()
 
         co_await context.async_respond(std::move(rsp));
       }))
-      .build();
+    .build();
 
-  co_spawn(context::boost(), endpoint->run(), detached);
+  co_spawn(bctx, endpoint->run(), detached);
 }
 
 void s2()
@@ -64,6 +69,7 @@ void s2()
   using namespace icon::transport;
 
   static auto endpoint = icon::setup_default_endpoint(
+    icon::use_services(bctx, zctx),
     icon::address(ZmqServerEndpointS2),
     icon::consumer<ConnectionEstablishReq>(
       [](MessageContext<ConnectionEstablishReq> context) -> awaitable<void> {
@@ -85,9 +91,9 @@ void s2()
 
         co_await context.async_respond(std::move(rsp));
       }))
-      .build();
+                           .build();
 
-  co_spawn(context::boost(), endpoint->run(), detached);
+  co_spawn(bctx, endpoint->run(), detached);
 }
 
 void server()
@@ -99,21 +105,20 @@ void server()
   s1();
   s2();
 
-  auto& ctx = context::boost();
   using work_guard_type =
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-  work_guard_type work_guard(ctx.get_executor());
-  ctx.run();
+  work_guard_type work_guard(bctx.get_executor());
+  bctx.run();
+
 }
 
-constexpr size_t NumberOfMessages = 10000;
+constexpr size_t NumberOfMessages = 500;
 
 awaitable<void> run_client_for_s1(icon::details::BasicClient& client, const char* endpoint)
 {
   co_await client.async_connect(endpoint);
 
-  for (size_t i = 0; i < NumberOfMessages; i++)
-  {
+  for (size_t i = 0; i < NumberOfMessages; i++) {
     auto seq_req = icon::transport::TestSeqReq{};
     seq_req.set_seq(i);
 
@@ -132,8 +137,7 @@ awaitable<void> run_client_for_s2(icon::details::BasicClient& client, const char
 {
   co_await client.async_connect(endpoint);
 
-  for (size_t i = 0; i < NumberOfMessages; i++)
-  {
+  for (size_t i = 0; i < NumberOfMessages; i++) {
     auto seq_req = icon::transport::TestSeqReq{};
     seq_req.set_seq(i);
 
@@ -150,18 +154,18 @@ awaitable<void> run_client_for_s2(icon::details::BasicClient& client, const char
 
 void client()
 {
-  auto bctx = boost::asio::io_context{};
-  auto zctx = zmq::context_t{};
-  auto client1 = icon::details::BasicClient{ zctx, bctx };
-  auto client2 = icon::details::BasicClient{ zctx, bctx };
+  auto bctx_cl = boost::asio::io_context{};
+  auto zctx_cl = zmq::context_t{};
+  auto client1 = icon::details::BasicClient{ zctx_cl, bctx_cl };
+  auto client2 = icon::details::BasicClient{ zctx_cl, bctx_cl };
 
-  co_spawn(bctx, run_client_for_s1(client1, ZmqServerEndpointS1), detached);
-  co_spawn(bctx, run_client_for_s2(client2, ZmqServerEndpointS2), detached);
+  co_spawn(bctx_cl, run_client_for_s1(client1, ZmqServerEndpointS1), detached);
+  co_spawn(bctx_cl, run_client_for_s2(client2, ZmqServerEndpointS2), detached);
 
   using work_guard_type =
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-  work_guard_type work_guard(bctx.get_executor());
-  bctx.run();
+  work_guard_type work_guard(bctx_cl.get_executor());
+  bctx_cl.run();
 }
 
 int main()

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "metadata.proto";
+
+package icon.dummy;
+
+message TestEmptyReq
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000004;
+};
+
+message TestSeqReq
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000005;
+  uint32 seq = 1;
+}
+
+message TestSeqCfm
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000006;
+  uint32 seq = 1;
+}

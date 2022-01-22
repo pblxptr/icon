@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <core/transport.hpp>
+#include <optional>
 
 namespace icon::details::core {
 
@@ -11,6 +12,8 @@ namespace icon::details::core {
 class UnknownMessage
 {
 public:
+  UnknownMessage() {}
+
   explicit UnknownMessage(transport::Raw_t data)
     : data_{ std::move(data) }
   {}
@@ -23,10 +26,14 @@ public:
   template<class Deserializer, class Destination>
   Destination get() const
   {
-    return Deserializer::template deserialize<Destination>(data_);
+    if (!data_) {
+      throw std::runtime_error("Cannot deserializer. Message is empty");
+    }
+
+    return Deserializer::template deserialize<Destination>(*data_);
   }
 
 private:
-  transport::Raw_t data_;
+  std::optional<transport::Raw_t> data_;
 };
 }// namespace icon::details::core

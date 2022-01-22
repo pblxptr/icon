@@ -17,6 +17,12 @@
 #include <icon.hpp>
 #include <protobuf/protobuf_serialization.hpp>
 #include <client/request.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <variant>
+#include <boost/asio/experimental/awaitable_operators.hpp>
+#include <client/error.hpp>
+#include <utils/timeout_guard.hpp>
 
 /**
  *
@@ -39,88 +45,108 @@ auto response = co_await requset.send();
 
 */
 
+
 namespace icon::details {
 class BasicClient
 {
-  using ConnectionEstablishReq_t = icon::transport::ConnectionEstablishReq;
-  using ConnectionEstablishCfm_t = icon::transport::ConnectionEstablishCfm;
   using Serializer_t = icon::details::serialization::protobuf::ProtobufSerializer;
   using Deserializer_t = icon::details::serialization::protobuf::ProtobufDeserializer;
   using Response_t = Response<Deserializer_t>;
 
 public:
   BasicClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
-    : socket_{ zctx, zmq::socket_type::dealer }, watcher_{ socket_, bctx }
+    : socket_{ zctx, zmq::socket_type::dealer }
+    , watcher_{ socket_, bctx }
   {
     spdlog::debug("BasicClient ctor");
+
+    socket_.set(zmq::sockopt::linger, 0);
   }
 
   awaitable<bool> async_connect(const char* endpoint)
   {
-    spdlog::debug("BasicClient: connecting to endpoint: {}, is_connected: {}", endpoint, is_connected_);
+    spdlog::debug("BasicClient: connecting to endpoint: {}, is_connected: {}", endpoint, is_socket_connected_);
 
-    if (is_connected_) {
+    if (is_socket_connected_) {
       co_return true;
     }
 
-    // Connection over zmq socket, send init and wait for cfm
+    // Connection over zmq socket
     socket_.connect(endpoint);
 
-    co_await init_connection_async();
+    is_socket_connected_ = true;
 
-    co_return is_connected_;
+    co_return is_socket_connected_;
   }
 
-  template<MessageToSend Message>
-  awaitable<Response_t> async_send(Message&& message)
+  template<MessageToSend Message, class Timeout = std::chrono::seconds>
+  awaitable<Response_t> async_send(Message&& message, Timeout timeout = std::chrono::seconds(0)) //TODO: Check timers
   {
-    if (not is_connected_) {
-      throw std::runtime_error("Client not connected");
+    using namespace boost::asio::experimental::awaitable_operators;
+
+    spdlog::debug("BasicClient: async_send()");
+
+    if (!is_connected()) {
+      throw std::runtime_error("Basic Client not connected");
     }
 
-    co_return co_await async_send_with_response(
-      std::forward<Message>(message));
+    if (auto ec = co_await async_send_message(std::forward<Message>(message), timeout); ec) {
+      co_return Response_t{*ec};
+    }
+
+    co_return co_await async_receive_message(timeout);
+  }
+
+  bool is_connected() const
+  {
+    return is_socket_connected_;
   }
 
 private:
-  awaitable<void> init_connection_async()
+  template<MessageToSend Message, class Timeout>
+  awaitable<std::optional<ErrorCode>> async_send_message(Message&& message, Timeout timeout)
   {
-    const auto response = co_await async_send_with_response(
-      ConnectionEstablishReq_t{});
+    spdlog::debug("BasicClient: async_send_with_response()");
 
-    if (!response.is<ConnectionEstablishCfm_t>()) {
-      throw std::runtime_error("Connection establish failed");
+    //TODO: instead of timeout guard, awaitable_operators could be used but, they are still in ::experimental
+
+    auto executor = co_await boost::asio::this_coro::executor;
+    auto zmq_send_op = ZmqCoSendOp{ socket_, watcher_ };
+    auto guard = TimeoutGuard{executor, [&]() { zmq_send_op.cancel(); }, std::move(timeout)};
+    auto request = Request<Message, Serializer_t>(std::forward<Message>(message));
+
+    guard.spawn();
+    co_await zmq_send_op.async_send(std::move(request).build());
+
+    if (guard.expired()) {
+      co_return ErrorCode::SendTimeout;
     }
 
-    spdlog::debug("BasicClient: connected");
-
-    is_connected_ = true;
+    co_return std::nullopt;
   }
 
-  template<MessageToSend Message>
-  awaitable<Response_t> async_send_with_response(Message&& message)
-  {
-    auto zmq_send_op = ZmqCoSendOp{ socket_, watcher_ };
-    auto request = Request<Message, Serializer_t>(std::move(message));
-    auto buffer = std::move(request).build();
-
-    co_await zmq_send_op.async_send(std::move(buffer));
-    co_return co_await async_receive();
-  }
-
-  awaitable<Response_t> async_receive()
+  template<class Timeout>
+  awaitable<Response_t> async_receive_message(Timeout timeout)
   {
     spdlog::debug("Basic client: async_receive");
 
+    auto executor = co_await boost::asio::this_coro::executor;
     auto zmq_recv_op = ZmqCoRecvOp{ socket_, watcher_ };
+    auto guard = TimeoutGuard{executor, [&]() { zmq_recv_op.cancel(); }, std::move(timeout)};
+
+    guard.spawn();
     auto raw_buffer = co_await zmq_recv_op.async_receive<icon::details::transport::RawBuffer_t>();
 
-    co_return Response<Deserializer_t>::create(std::move(raw_buffer));
+    if (guard.expired()) {
+      co_return Response_t{ ErrorCode::ReceiveTimeout };
+    }
+
+    co_return Response_t::create(std::move(raw_buffer));
   }
 
 private:
   zmq::socket_t socket_;
   Co_StreamWatcher watcher_;
-  bool is_connected_{ false };
+  bool is_socket_connected_ { false };
 };
 };// namespace icon::details

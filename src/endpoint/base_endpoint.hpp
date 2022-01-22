@@ -10,7 +10,7 @@ namespace icon::details {
 class BaseEndpoint : public Endpoint
 {
 protected:
-  using Raw_t       = transport::Raw_t;
+  using Raw_t = transport::Raw_t;
   using RawBuffer_t = transport::RawBuffer_t;
 
   BaseEndpoint(zmq::socket_t socket, boost::asio::io_context& bcxt)
@@ -20,16 +20,11 @@ protected:
 protected:
   awaitable<RawBuffer_t> async_recv_base()
   {
-    auto buffer = co_await zmq_recv_op_.async_receive<RawBuffer_t>();
-    spdlog::debug("BaseEndpoint: async_recv_base(), dump identity {}", buffer[0].str());
-
-    co_return buffer;
+    co_return co_await zmq_recv_op_.async_receive<RawBuffer_t>();
   }
 
   awaitable<void> async_send_base(RawBuffer_t&& buffer)
   {
-    spdlog::debug("BaseEndpoint: async_send_base(), dump identity {}", buffer[0].str());
-
     co_await zmq_send_op_.async_send(std::move(buffer));
   }
 
