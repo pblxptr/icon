@@ -27,7 +27,12 @@ jobs:
 #         libc++-dev
 
     - name: Setup precompiled libraries
-      run: sudo apt install libfmt-dev libspdlog-dev libboost-all-dev
+      run: sudo apt install \
+        libfmt-dev \
+        libspdlog-dev \
+        libboost-all-dev \
+        protobuf-compiler \
+        libprotoc-dev
 
     - name: Install Boost
       run: wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz
