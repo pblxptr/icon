@@ -36,11 +36,25 @@ jobs:
 
     - name: Install Boost
       run: wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz
-          && tar -zxf boost_1_77_0.tar.gz 
+          && tar -zxf boost_1_77_0.tar.gz
           && cd boost_1_77_0 && ./bootstrap.sh --prefix=/usr
           && sudo ./b2 install
           && cd ${{github.workspace}}
-      
+
+    - name: Install ZMQ
+      run: git clone https://github.com/zeromq/libzmq.git && cd libzmq
+            && ./autogen.sh
+            && ./configure
+            && make -j4 install
+            && cd ${{github.workspace}}
+
+    - name: Install CPPZMQ
+      run: git clone https://github.com/zeromq/cppzmq.git && cd cppzmq
+            && mkdir build && cd build
+            && cmake ..
+            && make -j4 install
+            && cd ${{github.workspace}}
+
     - name: Install Catch2
       run: git clone https://github.com/catchorg/Catch2.git
           && cd Catch2
