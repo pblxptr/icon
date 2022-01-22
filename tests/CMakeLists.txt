@@ -40,7 +40,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}_unittests
   PRIVATE Catch2::Catch2WithMain
   pthread
   zmq
-  zmqpp
   fmt
   ${Protobuf_LIBRARIES}
 )

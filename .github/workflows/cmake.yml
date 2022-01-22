@@ -39,7 +39,7 @@ jobs:
       id: cache-boost
       uses: actions/cache@v2
       with:
-        path: boost_1_77_0
+        path: ${{github.workspace}}/boost_1_77_0
         key:  boost_1_77_0
 
     - name: Download and bootstrap Boost
