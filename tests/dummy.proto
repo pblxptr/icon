@@ -4,6 +4,11 @@ import "metadata.proto";
 
 package icon.dummy;
 
+message TestEmptyReq
+{
+  option (metadata.MESSAGE_NUMBER) = 0x10000004;
+};
+
 message TestSeqReq
 {
   option (metadata.MESSAGE_NUMBER) = 0x10000005;

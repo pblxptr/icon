@@ -11,7 +11,11 @@ set(APP_SOURCES
 )
 
 set(TEST_SOURCES
-  basic_endpoint_tests.cpp
+  send_receive_tests.cpp
+  client/basic_client_tests.cpp
+  client/request_tests.cpp
+  client/response_tests.cpp
+  utils/async_mutex_tests.cpp
 )
 
 include_directories(../src/)
@@ -22,6 +26,8 @@ add_executable(${CMAKE_PROJECT_NAME}_test
   ${PROTO_SRCS}
   ${PROTO_HDRS}
 )
+
+# add_definitions(-DBOOST_ASIO_ENABLE_HANDLER_TRACKING)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}_test
   PRIVATE Catch2::Catch2WithMain

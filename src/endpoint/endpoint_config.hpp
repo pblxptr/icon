@@ -74,12 +74,12 @@ auto consumer(Consumer&& consumer)
   };
 }
 
-auto address(std::string address)
+inline auto address(std::string address)
 {
   return icon::details::add_address_config{ std::move(address) };
 }
 
-template<class Service> 
+template<class Service>
 auto use_service(Service&& service) //TODO: Use service and use services are likely to be merged
 {
   return icon::details::use_service{std::forward<Service>(service)};

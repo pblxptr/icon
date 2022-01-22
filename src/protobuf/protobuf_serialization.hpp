@@ -2,6 +2,9 @@
 
 #include <metadata.pb.h>
 #include <icon.pb.h>
+#include <core/identity.hpp>
+#include <core/header.hpp>
+
 // TODO: Add basic serializer, and move therer serialization of core::Identity
 namespace icon::details::serialization::protobuf {
 class ProtobufData

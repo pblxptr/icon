@@ -6,6 +6,7 @@
 #include <core/protocol.hpp>
 #include <core/transport.hpp>
 #include <core/unknown_message.hpp>
+#include <client/error.hpp>
 
 // TODO: Code duplication
 
@@ -21,6 +22,11 @@ class Response : public core::UnknownMessage
       icon::details::fields::Body>>;
 
 public:
+  Response(ErrorCode ec)
+    : UnknownMessage()
+    , error_code_{std::move(ec)}
+  {}
+
   Response(core::Header header, transport::Raw_t body) : UnknownMessage(std::move(body)), header_{ std::move(header) }
   {}
 
@@ -47,8 +53,23 @@ public:
     return UnknownMessage::get<Deserializer, Message>();
   }
 
+  template<class Message>
+  Message get_safe() const
+  {
+    if (!is<Message>()) {
+      throw std::runtime_error("Cannot get response message. Requested destination type does not match to message number contained in header");
+    }
+
+    return get<Message>();
+  }
+
+  auto error_code() const
+  {
+    return error_code_;
+  }
 
 private:
   core::Header header_{};
+  std::optional<ErrorCode> error_code_;
 };
 }// namespace icon::details

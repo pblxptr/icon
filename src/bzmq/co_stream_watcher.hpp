@@ -19,6 +19,7 @@ namespace {
 }// namespace
 
 namespace icon::details {
+
 class Co_StreamWatcher
 {
   enum class ZmqOperation {
@@ -33,54 +34,83 @@ class Co_StreamWatcher
   using Flags_t = Flags<ZmqOperation>;
 
 public:
+  using Result_t = std::tuple<bool, boost::system::error_code>;
+
   Co_StreamWatcher(zmq::socket_t& socket, boost::asio::io_context& context)
-    : socket_{ socket }, streamd_{ context } {}
+    : socket_{ socket }
+    , streamd_{ context }
+    {}
 
   Co_StreamWatcher(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher& operator=(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher(Co_StreamWatcher&&) = default;
   Co_StreamWatcher& operator=(Co_StreamWatcher&&) = delete;
 
-  ~Co_StreamWatcher() { stop(); }
+  ~Co_StreamWatcher()
+  {
+    spdlog::debug("SteramWatcher: dtor");
 
-  awaitable<bool> async_wait_receive(bool autonomous_mode = true)
+    stop();
+  }
+
+  awaitable<Result_t> async_wait_receive(bool auto_repeat = true)
   {
     spdlog::debug("StreamWatcher: async_wait_receive()");
 
-    auto result =
-      co_await setup_async_wait(ZmqOperation::Read, Wait_t::wait_read);
+    auto [can_receive, ec] = co_await setup_async_wait(ZmqOperation::Read, Wait_t::wait_read);
 
-    if (not result && autonomous_mode) {
-      co_return co_await async_wait_receive(autonomous_mode);
+    if (ec) {
+      co_return std::tuple{ false, ec };
     }
 
-    co_return result;
+    if (!can_receive && auto_repeat) {
+      co_return co_await async_wait_receive(auto_repeat);
+    }
+
+    co_return std::tuple{ can_receive, ec };
   }
 
-  awaitable<bool> async_wait_send()
+  awaitable<Result_t> async_wait_send()
   {
     spdlog::debug("StreamWatcher: async_wait_send()");
 
-    auto result =
-      co_await setup_async_wait(ZmqOperation::Write, Wait_t::wait_write);
-    co_return result;
+    co_return co_await setup_async_wait(ZmqOperation::Write, Wait_t::wait_write);
+  }
+
+  void cancel()
+  {
+    auto ec = boost::system::error_code{};
+
+    spdlog::debug("StreamWatcher: cancel(), ec: {}", ec.message());
+
+    streamd_.cancel(ec);
+
+    if (ec) {
+      throw std::runtime_error("CoStreamWatcher: unexpected error during cancel operation.");
+    }
   }
 
 private:
-  awaitable<bool> setup_async_wait(const ZmqOperation op,
-    const Wait_t wait_type)
+  awaitable<Result_t> setup_async_wait(const ZmqOperation op, const Wait_t wait_type)
   {
+    auto ec = boost::system::error_code{};
+
+    spdlog::debug("StreamWatcher: setup_async_wait()");
+
     if (!streamd_.is_open()) {
+      spdlog::debug("StreamWatcher: assigning socket descriptor");
       streamd_.assign(socket_.get(zmq::sockopt::fd));
     }
 
     if (check_ops(op)) {
-      co_return true;
+      co_return std::tuple{ true, ec };
     }
 
-    co_await streamd_.async_wait(posix::stream_descriptor::wait_type::wait_read,
-      use_awaitable);
-    co_return check_ops(op);
+    co_await streamd_.async_wait(wait_type, boost::asio::redirect_error(use_awaitable, ec));
+
+    spdlog::debug("StreamWatcher: returned from async_wait with: {}", ec.message());
+
+    co_return  std::tuple{ check_ops(op), ec };
   }
 
   bool check_ops(const ZmqOperation op)
@@ -98,12 +128,15 @@ private:
 
   void stop()
   {
-    streamd_.cancel();
-    streamd_.release();
+    spdlog::debug("StreamWatcher: stop()");
+
+    if (streamd_.is_open()) {
+      cancel();
+
+      spdlog::debug("StrwamWatcher: stop(), release()");
+      streamd_.release();
+    }
   }
-
-  auto context() { return streamd_.get_executor(); }
-
 private:
   zmq::socket_t& socket_;
   boost::asio::posix::stream_descriptor streamd_;
