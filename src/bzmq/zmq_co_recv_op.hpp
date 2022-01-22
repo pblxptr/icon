@@ -37,10 +37,7 @@ public:
       co_return RawBuffer{};
     }
 
-    auto [buffer, nreceived] = receive<RawBuffer>();
-    assert(nreceived != 0);
-
-    co_return buffer;
+    co_return receive<RawBuffer>();
   }
 
   // template<class RawBuffer>
@@ -97,7 +94,9 @@ private:
     auto buffer = RawBuffer{};
     auto nbytes = socket_.recv(buffer, zmq::recv_flags::dontwait);
 
-    return std::tuple{std::move(buffer), nbytes};
+    assert(nbytes != 0);
+
+    return buffer;
   }
 
   template<class RawBuffer>
@@ -108,7 +107,9 @@ private:
     auto buffer = RawBuffer{};
     auto nmessages = zmq::recv_multipart(socket_, std::back_inserter(buffer), zmq::recv_flags::dontwait);
 
-    return std::tuple(std::move(buffer), nmessages);
+    assert(nmessages != 0);
+
+    return buffer;
   }
 
 private:

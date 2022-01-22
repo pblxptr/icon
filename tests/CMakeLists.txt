@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.22)
 
+#Workaround for clang, Boost asio has relased coroutines without fully supported clang
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
+  set(CMAKE_CXX_FLAGS "-std=c++20")
+endif()
+
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
   ../src/protobuf/metadata.proto
   ../src/protobuf/icon.proto
@@ -20,7 +27,7 @@ set(TEST_SOURCES
 
 include_directories(../src/)
 
-add_executable(${CMAKE_PROJECT_NAME}_test
+add_executable(${CMAKE_PROJECT_NAME}_unittests
   ${APP_SOURCES}
   ${TEST_SOURCES}
   ${PROTO_SRCS}
@@ -29,7 +36,7 @@ add_executable(${CMAKE_PROJECT_NAME}_test
 
 # add_definitions(-DBOOST_ASIO_ENABLE_HANDLER_TRACKING)
 
-target_link_libraries(${CMAKE_PROJECT_NAME}_test
+target_link_libraries(${CMAKE_PROJECT_NAME}_unittests
   PRIVATE Catch2::Catch2WithMain
   pthread
   zmq
@@ -37,3 +44,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}_test
   fmt
   ${Protobuf_LIBRARIES}
 )
+
+add_test(NAME UnitTests COMMAND ${CMAKE_PROJECT_NAME}_unittests)

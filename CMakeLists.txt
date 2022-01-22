@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(zmq_boost CXX)
 
+
+option(ENABLE_TESTING "Enable building and executing tests" OFF)
+
 set(CMAKE_CXX_STANDARD 20)
 
 include(cmake/StaticAnalyzers.cmake)
@@ -13,4 +16,8 @@ include_directories(build/src)
 include_directories(build/tests)
 
 add_subdirectory(src)
-add_subdirectory(tests)
+
+if (ENABLE_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
