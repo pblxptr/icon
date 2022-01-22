@@ -1,7 +1,6 @@
-# icon
+# Icon
+Icon is a library that allows to easily use zmq sockets in Boost.Asio.
 
-[![Master](https://github.com/pblxptr/icon/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/pblxptr/icon/actions/workflows/cmake.yml)
+## Build status
 
-[![Dev](https://github.com/pblxptr/icon/actions/workflows/cmake.yml/badge.svg?branch=dev)](https://github.com/pblxptr/icon/actions/workflows/cmake.yml)
-
-[![test](https://github.com/pblxptr/icon/actions/workflows/cmake.yml/badge.svg)](https://github.com/pblxptr/icon/actions/workflows/cmake.yml)
+[![CMake](https://github.com/pblxptr/icon/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/pblxptr/icon/actions/workflows/cmake.yml)
