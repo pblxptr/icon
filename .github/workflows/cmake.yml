@@ -37,7 +37,7 @@ jobs:
     ######### BOOST #########
     - name: Cache Boost
       id: cache-boost
-      uses actions/cache@v2
+      uses: actions/cache@v2
       with:
         path: boost_1_77_0
         key:  boost_1_77_0
