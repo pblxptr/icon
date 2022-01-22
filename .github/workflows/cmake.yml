@@ -27,15 +27,47 @@ jobs:
 #         libc++-dev
 
     - name: Setup precompiled libraries
-      run: sudo apt install libfmt-dev libspdlog-dev libboost-all-dev
+      run: sudo apt install
+        libfmt-dev
+        libspdlog-dev
+        libboost-all-dev
+        protobuf-compiler
+        libprotoc-dev
+
+    ######### BOOST #########
+    - name: Cache Boost
+      id: cache-boost
+      uses: actions/cache@v2
+      with:
+        path: ${{github.workspace}}/boost_1_77_0
+        key:  boost_1_77_0
+
+    - name: Download and bootstrap Boost
+      if: steps. cache-boost.outputs.cache-hit != 'true'
+      run: wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz
+          && tar -zxf boost_1_77_0.tar.gz
+          && cd boost_1_77_0 && ./bootstrap.sh --prefix=/usr
 
     - name: Install Boost
-      run: wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz
-          && tar -zxf boost_1_77_0.tar.gz 
-          && cd boost_1_77_0 && ./bootstrap.sh --prefix=/usr
-          && sudo ./b2 install
+      run: cd boost_1_77_0 && sudo ./b2 install
           && cd ${{github.workspace}}
-      
+
+    ######### ZMQ #########
+    - name: Install ZMQ
+      run: git clone https://github.com/zeromq/libzmq.git && cd libzmq
+            && ./autogen.sh
+            && ./configure
+            && sudo make -j4 install
+            && cd ${{github.workspace}}
+
+    ######### CPPZMQ #########
+    - name: Install CPPZMQ
+      run: git clone https://github.com/zeromq/cppzmq.git && cd cppzmq
+            && mkdir build && cd build
+            && cmake ..
+            && sudo make -j4 install
+            && cd ${{github.workspace}}
+
     - name: Install Catch2
       run: git clone https://github.com/catchorg/Catch2.git
           && cd Catch2
