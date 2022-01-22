@@ -27,11 +27,11 @@ jobs:
 #         libc++-dev
 
     - name: Setup precompiled libraries
-      run: sudo apt install \
-        libfmt-dev \
-        libspdlog-dev \
-        libboost-all-dev \
-        protobuf-compiler \
+      run: sudo apt install
+        libfmt-dev
+        libspdlog-dev
+        libboost-all-dev
+        protobuf-compiler
         libprotoc-dev
 
     - name: Install Boost
