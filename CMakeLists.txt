@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(zmq_boost CXX)
+project(icon CXX)
 
 
 option(ENABLE_TESTING "Enable building and executing tests" OFF)
@@ -13,11 +13,11 @@ find_package(Boost REQUIRED coroutine)
 find_package(Protobuf REQUIRED)
 
 include_directories(build/src)
-include_directories(build/tests)
 
 add_subdirectory(src)
 
 if (ENABLE_TESTING)
+  include_directories(build/tests)
   enable_testing()
   add_subdirectory(tests)
 endif()
