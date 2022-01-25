@@ -1,5 +1,7 @@
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+set (Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR}/src/protobuf)
+protobuf_generate_cpp(
+  PROTO_SRCS PROTO_HDRS
   protobuf/metadata.proto
   protobuf/icon.proto
 )
