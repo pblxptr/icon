@@ -12,10 +12,10 @@
 #include <protobuf/protobuf_serialization.hpp>
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
-
+#include <catch2/catch_test_macros.hpp>
 #include "icon.pb.h"
 
-//TODO: Refactor, it's just a draft
+//TODO: Refactor, it's just a very ugly draft.
 
 namespace posix = boost::asio::posix;
 
@@ -24,13 +24,12 @@ using boost::asio::co_spawn;
 using boost::asio::detached;
 using boost::asio::use_awaitable;
 
-constexpr auto ZmqServerEndpointS1 = "tcp://127.0.0.1:6667";
-constexpr auto ZmqServerEndpointS2 = "tcp://127.0.0.1:6668";
+constexpr auto ZmqServerEndpointS1 = "tcp://127.0.0.1:9998";
+constexpr auto ZmqServerEndpointS2 = "tcp://127.0.0.1:9999";
 constexpr size_t NumberOfMessages = 500;
 size_t ServerReceivedMessages = 0;
 size_t ClientSentMessages = 0;
 
-auto bctx = boost::asio::io_context{};
 auto zctx = zmq::context_t{};
 
 awaitable<void> message_watcher(boost::asio::io_context& ctx, const size_t expected_msgs, std::function<size_t()> get_actual)
@@ -47,10 +46,12 @@ awaitable<void> message_watcher(boost::asio::io_context& ctx, const size_t expec
     spdlog::info("Test");
   }
 
+  spdlog::info("Reseting context");
+
   ctx.stop();
 }
 
-void s1()
+awaitable<void> s1(boost::asio::io_context& bctx, zmq::context_t& zctx)
 {
   using namespace icon;
   using namespace icon::details;
@@ -76,10 +77,10 @@ void s1()
       }))
     .build();
 
-  co_spawn(bctx, endpoint->run(), detached);
+  co_await endpoint->run();
 }
 
-void s2()
+awaitable<void> s2(boost::asio::io_context& bctx, zmq::context_t& zctx)
 {
   using namespace icon;
   using namespace icon::details;
@@ -105,7 +106,7 @@ void s2()
       }))
                            .build();
 
-  co_spawn(bctx, endpoint->run(), detached);
+  co_await endpoint->run();
 }
 
 void server()
@@ -114,8 +115,10 @@ void server()
   using namespace icon::details;
   using namespace icon::transport;
 
-  s1();
-  s2();
+  static auto bctx = boost::asio::io_context{};
+
+  co_spawn(bctx, s1(bctx, zctx), detached);
+  co_spawn(bctx, s2(bctx, zctx), detached);
   co_spawn(bctx, message_watcher(bctx, NumberOfMessages * 2, []() { return ServerReceivedMessages; }), detached);
 
   using work_guard_type =
@@ -123,6 +126,7 @@ void server()
   work_guard_type work_guard(bctx.get_executor());
   bctx.run();
 
+  spdlog::info("Server thread stop");
 }
 
 awaitable<void> run_client_for_s1(icon::details::BasicClient& client, const char* endpoint)
@@ -143,6 +147,8 @@ awaitable<void> run_client_for_s1(icon::details::BasicClient& client, const char
     ClientSentMessages++;
     spdlog::info("C1: received seq cfm: {}", msg.seq());
   }
+
+  spdlog::info("Client1 completed");
 }
 
 awaitable<void> run_client_for_s2(icon::details::BasicClient& client, const char* endpoint)
@@ -163,6 +169,8 @@ awaitable<void> run_client_for_s2(icon::details::BasicClient& client, const char
     ClientSentMessages++;
     spdlog::info("C2: received seq cfm: {}", msg.seq());
   }
+
+  spdlog::info("Client2 completed");
 }
 
 void client()
@@ -180,15 +188,66 @@ void client()
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
   work_guard_type work_guard(bctx_cl.get_executor());
   bctx_cl.run();
+
+  spdlog::info("Client thread stop");
 }
 
-int main()
+bool task_completed()
 {
+  return (ServerReceivedMessages == NumberOfMessages * 2)
+    && ClientSentMessages == NumberOfMessages * 2;
+}
+
+void guard_func()
+{
+  size_t counter{};
+  while(1) {
+    if (!task_completed()) {
+      ++counter;
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    else {
+      break;
+    }
+
+    if (counter == 30) {
+      std::terminate();
+    }
+  }
+
+
+}
+
+TEST_CASE("Multiple endpoints exchange messages with multiple clients") {
   spdlog::set_level(spdlog::level::info);
 
+
+  auto guard = std::thread(guard_func);
   auto server_th = std::thread(server);
   auto client1_th = std::thread(client);
 
+  guard.join();
   server_th.join();
+  spdlog::info("Server thread joined");
+
   client1_th.join();
+  spdlog::info("Client thread joined");
+
+  REQUIRE(ServerReceivedMessages == NumberOfMessages * 2);
+  REQUIRE(ClientSentMessages == NumberOfMessages * 2);
+
 }
+
+// int main()
+// {
+//     // auto guard = std::thread(guard_func);
+//   auto server_th = std::thread(server);
+//   auto client1_th = std::thread(client);
+
+//   // guard.join();
+//   server_th.join();
+//   spdlog::info("Server thread joined");
+
+//   client1_th.join();
+//   spdlog::info("Client thread joined");
+// }

@@ -4,7 +4,7 @@
 #include <client/basic_client.hpp>
 #include <dummy.pb.h>
 
-constexpr auto EndpointS1 = "tcp://127.0.0.1:6667";
+constexpr auto EndpointS1 = "tcp://127.0.0.1:6909";
 
 using namespace icon::transport;
 using namespace icon::dummy;

@@ -1,6 +1,7 @@
 from conans import ConanFile, CMake, tools
 from conans.errors import ConanInvalidConfiguration
-
+import shutil
+import os
 class IconConan(ConanFile):
     name = "icon"
     version = "0.1"
@@ -10,38 +11,65 @@ class IconConan(ConanFile):
     description = "<Description of Icon here>"
     topics = ("<Put some tag here>", "<here>", "<and here>")
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False], }
-    default_options = {"shared": False, "fPIC": True}
-    generators = ["cmake", "cmake_find_package"]
-    exports_sources = ["cmake/*", "src/*", "CMakeLists.txt"]
-    requires = ["boost/1.78.0", "cppzmq/4.8.1", "protobuf/3.19.2", "spdlog/1.9.2", "catch2/2.13.8"]
+    options = {
+      "shared": [True, False],
+      "fPIC": [True, False],
+      "enable_testing": [True, False]
+    }
+    default_options = {
+      "shared": False,
+      "fPIC": True,
+      "enable_testing" : True
+    }
+    generators = [
+      "cmake",
+      "cmake_find_package",
+      "cmake_paths"
+    ]
+    exports_sources = [
+      "conan/*",
+      "cmake/*",
+      "src/*",
+      "CMakeLists.txt",
+      "tests/*"
+    ]
+    requires = [
+      "boost/1.78.0",
+      "cppzmq/4.8.1",
+      "protobuf/3.12.4",
+      "spdlog/1.9.2",
+    ]
+
+    def requirements(self):
+      if self.options.enable_testing:
+        self.requires("catch2/3.0.0@bhome/testing")
+
+    def source(self):
+      shutil.move("CMakeLists.txt", "CMakeListsOriginal.txt")
+      shutil.move(os.path.join("conan", "CMakeLists.txt"), "CMakeLists.txt")
 
     def config_options(self):
-        if self.settings.os == "Windows":
-            del self.options.fPIC
-   
-    def validate(self):
-        print (self.settings.compiler)
-        print (tools.Version(self.settings.compiler.version))
+      if self.settings.os == "Windows":
+          del self.options.fPIC
 
+    def validate(self):
         if self.settings.os == "Windows":
             raise ConanInvalidConfiguration("Windows not supported")
-        
+
         if self.settings.compiler == "gcc" and tools.Version(self.settings.compiler.version) < "10":
-            raise ConanInvalidConfiguration("GCC must be >= 10")
+            raise ConanInvalidConfiguration("GCC version must be >= 10")
 
         if self.settings.compiler == "clang" and tools.Version(self.settings.compiler.version) <= "13":
-            raise ConanInvalidConfiguration("Clang musg be >= 13")
+            raise ConanInvalidConfiguration("Clang version must be >= 13")
 
     def build(self):
         cmake = CMake(self)
+        cmake.definitions["ENABLE_TESTING"] = self.options.enable_testing
         cmake.configure(source_folder=".")
         cmake.build()
 
-        # Explicit way:
-        # self.run('cmake %s/hello %s'
-        #          % (self.source_folder, cmake.command_line))
-        # self.run("cmake --build . %s" % cmake.build_config)
+        if (self.options.enable_testing):
+          cmake.test();
 
     def package(self):
         self.copy("*.h", dst="include", src="src")

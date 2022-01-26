@@ -1,5 +1,7 @@
 #pragma once
 
+//TODO: Add option that would allow to shutdown without blocking. When endpoint is being destructed it sometimes hangs. Check linger
+
 #include <bzmq/co_stream_watcher.hpp>
 #include <bzmq/zmq_co_recv_op.hpp>
 #include <bzmq/zmq_co_send_op.hpp>

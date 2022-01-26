@@ -14,18 +14,15 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 set(SOURCES
-  main.cpp
+  # main.cpp
   utils/context.cpp
   endpoint/basic_endpoint/basic_endpoint.cpp
 )
-file(GLOB HEADER_SOURCES${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
-
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(STATIC_LIB_NAME ${CMAKE_PROJECT_NAME})
-set(SHARED_LIB_NAME ${CMAKE_PROJECT_NAME}_shared)
 
 add_library(objlib OBJECT
   ${SOURCES}
@@ -42,16 +39,3 @@ target_link_libraries(${STATIC_LIB_NAME}
   fmt
   ${Protobuf_LIBRARIES}
 )
-
-
-# Make shared library
-# add_library(${SHARED_LIB_NAME} SHARED $<TARGET_OBJECTS:objlib>)
-
-# target_link_libraries(${SHARED_LIB_NAME}
-#   pthread
-#   zmq
-#   fmt
-#   ${Protobuf_LIBRARIES}
-# )
-
-
