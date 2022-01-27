@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.18)
 project(icon CXX)
-
 
 option(ENABLE_TESTING "Enable building and executing tests" OFF)
 
@@ -8,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 include(cmake/StaticAnalyzers.cmake)
 
-find_package(Boost REQUIRED coroutine)
+find_package(Boost 1.78 REQUIRED coroutine)
 find_package(Protobuf REQUIRED)
 
 include_directories(${CMAKE_BINARY_DIR}/src)

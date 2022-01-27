@@ -9,7 +9,6 @@
 #include <endpoint/response.hpp>
 #include <icon.hpp>
 #include <protobuf/protobuf_serialization.hpp>
-#include <utils/context.hpp>
 
 namespace icon::details {
 

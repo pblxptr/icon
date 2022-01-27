@@ -14,8 +14,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 set(SOURCES
-  # main.cpp
-  utils/context.cpp
   endpoint/basic_endpoint/basic_endpoint.cpp
 )
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
@@ -33,9 +31,9 @@ add_library(objlib OBJECT
 # Make static library
 add_library(${STATIC_LIB_NAME} STATIC $<TARGET_OBJECTS:objlib>)
 
-target_link_libraries(${STATIC_LIB_NAME}
-  pthread
-  zmq
-  fmt
-  ${Protobuf_LIBRARIES}
-)
+# target_link_libraries(${STATIC_LIB_NAME}
+#   pthread
+#   cppzmq
+#   spdlog
+#   ${Protobuf_LIBRARIES}
+# )

@@ -19,15 +19,15 @@ class IconConan(ConanFile):
     default_options = {
       "shared": False,
       "fPIC": True,
-      "enable_testing" : True
+      "enable_testing" : False
     }
     generators = [
       "cmake",
-      "cmake_find_package",
-      "cmake_paths"
+      "cmake_find_package"
+      # "cmake_paths"
     ]
     exports_sources = [
-      "conan/*",
+      "conan/CMakeLists.txt",
       "cmake/*",
       "src/*",
       "CMakeLists.txt",
@@ -65,7 +65,8 @@ class IconConan(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.definitions["ENABLE_TESTING"] = self.options.enable_testing
-        cmake.configure(source_folder=".")
+        cmake.configure()
+        # cmake.configure(source_folder=".")
         cmake.build()
 
         if (self.options.enable_testing):
