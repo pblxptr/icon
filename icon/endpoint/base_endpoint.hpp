@@ -2,11 +2,11 @@
 
 //TODO: Add option that would allow to shutdown without blocking. When endpoint is being destructed it sometimes hangs. Check linger
 
-#include <bzmq/co_stream_watcher.hpp>
-#include <bzmq/zmq_co_recv_op.hpp>
-#include <bzmq/zmq_co_send_op.hpp>
-#include <endpoint/endpoint.hpp>
-#include <core/transport.hpp>
+#include <icon/bzmq/co_stream_watcher.hpp>
+#include <icon/bzmq/zmq_co_recv_op.hpp>
+#include <icon/bzmq/zmq_co_send_op.hpp>
+#include <icon/endpoint/endpoint.hpp>
+#include <icon/core/transport.hpp>
 
 namespace icon::details {
 class BaseEndpoint : public Endpoint

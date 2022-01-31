@@ -3,7 +3,7 @@
 #include <vector>
 #include <zmq.hpp>
 
-#include <utils/traits.hpp>
+#include <icon/utils/traits.hpp>
 
 namespace icon::details {
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <endpoint/basic_endpoint/basic_endpoint.hpp>
-#include <icon.hpp>
+#include <icon/endpoint/basic_endpoint/basic_endpoint.hpp>
+#include <icon/icon.hpp>
 
 // TODO: Disable copy and move operation
 // TODO: Consider changing all properites to request

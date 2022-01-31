@@ -1,8 +1,8 @@
 #pragma once
 
-#include <core/protocol.hpp>
-#include <core/transport.hpp>
-#include <core/header.hpp>
+#include <icon/core/protocol.hpp>
+#include <icon/core/transport.hpp>
+#include <icon/core/header.hpp>
 
 namespace icon::details {
 template<class Message, class Serializer>

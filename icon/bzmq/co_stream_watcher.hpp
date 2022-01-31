@@ -1,14 +1,15 @@
 #pragma once
 
-#include <boost/asio.hpp>
-#include <cassert>
-#include <spdlog/spdlog.h>
-#include <utils/flags.hpp>
-#include <zmq.hpp>
-#include <zmq_addon.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
+#include <boost/asio.hpp>
+#include <spdlog/spdlog.h>
+#include <icon/utils/flags.hpp>
+#include <zmq.hpp>
+#include <zmq_addon.hpp>
+#include <cassert>
 
+//TODO: Remove usings
 
 namespace {
   namespace posix = boost::asio::posix;
@@ -39,7 +40,9 @@ public:
   Co_StreamWatcher(zmq::socket_t& socket, boost::asio::io_context& context)
     : socket_{ socket }
     , streamd_{ context }
-    {}
+    {
+      spdlog::debug("SteramWatcher: ctor");
+    }
 
   Co_StreamWatcher(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher& operator=(const Co_StreamWatcher&) = delete;

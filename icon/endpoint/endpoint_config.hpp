@@ -1,8 +1,8 @@
 #pragma once
 
-#include <core/protocol.hpp>
-#include <endpoint/basic_endpoint/basic_endpoint.hpp>
-#include <endpoint/basic_endpoint/basic_endpoint_builder.hpp>
+#include <icon/core/protocol.hpp>
+#include <icon/endpoint/basic_endpoint/basic_endpoint.hpp>
+#include <icon/endpoint/basic_endpoint/basic_endpoint_builder.hpp>
 
 namespace icon::details {
 template<class Message, class Consumer>

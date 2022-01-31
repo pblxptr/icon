@@ -8,7 +8,7 @@
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
 
-#include "co_stream_watcher.hpp"
+#include <icon/bzmq/co_stream_watcher.hpp>
 
 namespace {
 using boost::asio::awaitable;

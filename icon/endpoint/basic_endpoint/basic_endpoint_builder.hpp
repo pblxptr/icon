@@ -1,6 +1,6 @@
 #pragma once
 
-#include <endpoint/basic_endpoint/basic_endpoint_consumer_handler.hpp>
+#include <icon/endpoint/basic_endpoint/basic_endpoint_consumer_handler.hpp>
 
 namespace icon::details {
 class BasicEndpointBuilder

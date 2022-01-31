@@ -1,8 +1,8 @@
 #pragma once
 
-#include <core/identity.hpp>
-#include <core/header.hpp>
-#include <core/protocol.hpp>
+#include <icon/core/identity.hpp>
+#include <icon/core/header.hpp>
+#include <icon/core/protocol.hpp>
 
 
 namespace icon::details {

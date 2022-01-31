@@ -1,28 +1,29 @@
 #pragma once
 
+#include <variant>
+#include <vector>
 #include <boost/asio.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
-#include <spdlog/spdlog.h>
-#include <vector>
-#include <zmq.hpp>
-#include <zmq_addon.hpp>
-
-#include <bzmq/co_stream_watcher.hpp>
-#include <bzmq/zmq_co_recv_op.hpp>
-#include <bzmq/zmq_co_send_op.hpp>
-#include <client/response.hpp>
-#include <core/header.hpp>
-#include <core/protocol.hpp>
-#include <icon.hpp>
-#include <protobuf/protobuf_serialization.hpp>
-#include <client/request.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <variant>
-#include <boost/asio/experimental/awaitable_operators.hpp>
-#include <client/error.hpp>
-#include <utils/timeout_guard.hpp>
+#include <zmq.hpp>
+#include <zmq_addon.hpp>
+#include <spdlog/spdlog.h>
+
+
+#include <icon/icon.hpp>
+#include <icon/bzmq/co_stream_watcher.hpp>
+#include <icon/bzmq/zmq_co_recv_op.hpp>
+#include <icon/bzmq/zmq_co_send_op.hpp>
+#include <icon/client/response.hpp>
+#include <icon/core/header.hpp>
+#include <icon/core/protocol.hpp>
+#include <icon/protobuf/protobuf_serialization.hpp>
+#include <icon/client/request.hpp>
+#include <icon/client/error.hpp>
+#include <icon/utils/timeout_guard.hpp>
 
 /**
  *
@@ -54,6 +55,12 @@ class BasicClient
   using Response_t = Response<Deserializer_t>;
 
 public:
+  BasicClient(const BasicClient&) = delete;
+  BasicClient& operator=(const BasicClient&) = delete;
+
+  BasicClient(BasicClient&&) = default;
+  BasicClient& operator=(BasicClient&&) = default;
+
   BasicClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
     : socket_{ zctx, zmq::socket_type::dealer }
     , watcher_{ socket_, bctx }

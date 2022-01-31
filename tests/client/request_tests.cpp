@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
-#include <client/request.hpp>
-#include <protobuf/protobuf_serialization.hpp>
+
+#include <icon/client/request.hpp>
+#include <icon/protobuf/protobuf_serialization.hpp>
 #include <dummy.pb.h>
 
 TEST_CASE("Request contains valid data")

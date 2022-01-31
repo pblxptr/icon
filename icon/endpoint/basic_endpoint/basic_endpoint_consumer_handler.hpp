@@ -1,7 +1,7 @@
 #pragma once
 
-#include <endpoint/consumer_handler.hpp>
-#include <endpoint/message_context.hpp>
+#include <icon/endpoint/consumer_handler.hpp>
+#include <icon/endpoint/message_context.hpp>
 namespace icon::details {
 
 template<class Endpoint, class Request, class Message, class Consumer>

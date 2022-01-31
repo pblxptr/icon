@@ -1,18 +1,18 @@
+#include <catch2/catch_test_macros.hpp>
 #include <spdlog/spdlog.h>
-
+#include <zmq.hpp>
+#include <zmq_addon.hpp>
 #include <boost/asio.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/co_spawn.hpp>
-#include <bzmq/co_stream_watcher.hpp>
 #include <cassert>
-#include <client/basic_client.hpp>
-#include <core/protocol.hpp>
-#include <endpoint/endpoint_config.hpp>
-#include <endpoint/message_context.hpp>
-#include <protobuf/protobuf_serialization.hpp>
-#include <zmq.hpp>
-#include <zmq_addon.hpp>
-#include <catch2/catch_test_macros.hpp>
+
+#include <icon/bzmq/co_stream_watcher.hpp>
+#include <icon/client/basic_client.hpp>
+#include <icon/core/protocol.hpp>
+#include <icon/endpoint/endpoint_config.hpp>
+#include <icon/endpoint/message_context.hpp>
+#include <icon/protobuf/protobuf_serialization.hpp>
 #include "icon.pb.h"
 
 //TODO: Refactor, it's just a very ugly draft.
@@ -237,17 +237,3 @@ TEST_CASE("Multiple endpoints exchange messages with multiple clients") {
   REQUIRE(ClientSentMessages == NumberOfMessages * 2);
 
 }
-
-// int main()
-// {
-//     // auto guard = std::thread(guard_func);
-//   auto server_th = std::thread(server);
-//   auto client1_th = std::thread(client);
-
-//   // guard.join();
-//   server_th.join();
-//   spdlog::info("Server thread joined");
-
-//   client1_th.join();
-//   spdlog::info("Client thread joined");
-// }

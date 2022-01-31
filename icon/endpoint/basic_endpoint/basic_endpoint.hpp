@@ -1,14 +1,14 @@
 #pragma once
 
-#include <core/identity.hpp>
-#include <core/protocol.hpp>
-#include <endpoint/base_endpoint.hpp>
-#include <endpoint/consumer_handler.hpp>
-#include <endpoint/endpoint.hpp>
-#include <endpoint/request.hpp>
-#include <endpoint/response.hpp>
-#include <icon.hpp>
-#include <protobuf/protobuf_serialization.hpp>
+#include <icon/icon.hpp>
+#include <icon/core/identity.hpp>
+#include <icon/core/protocol.hpp>
+#include <icon/endpoint/base_endpoint.hpp>
+#include <icon/endpoint/consumer_handler.hpp>
+#include <icon/endpoint/endpoint.hpp>
+#include <icon/endpoint/request.hpp>
+#include <icon/endpoint/response.hpp>
+#include <icon/protobuf/protobuf_serialization.hpp>
 
 namespace icon::details {
 

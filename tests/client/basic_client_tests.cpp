@@ -1,10 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
-#include <client/basic_client.hpp>
-#include <endpoint/endpoint_config.hpp>
-#include <protobuf/protobuf_serialization.hpp>
-#include <dummy.pb.h>
 #include <thread>
 #include <spdlog/spdlog.h>
+
+#include <icon/client/basic_client.hpp>
+#include <icon/endpoint/endpoint_config.hpp>
+#include <icon/protobuf/protobuf_serialization.hpp>
+#include <dummy.pb.h>
 
 constexpr auto EndpointS1 = "tcp://127.0.0.1:6667";
 

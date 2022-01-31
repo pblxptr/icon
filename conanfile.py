@@ -24,12 +24,11 @@ class IconConan(ConanFile):
     generators = [
       "cmake",
       "cmake_find_package"
-      # "cmake_paths"
     ]
     exports_sources = [
       "conan/CMakeLists.txt",
       "cmake/*",
-      "src/*",
+      "icon/*",
       "CMakeLists.txt",
       "tests/*"
     ]
@@ -66,15 +65,14 @@ class IconConan(ConanFile):
         cmake = CMake(self)
         cmake.definitions["ENABLE_TESTING"] = self.options.enable_testing
         cmake.configure()
-        # cmake.configure(source_folder=".")
         cmake.build()
 
         if (self.options.enable_testing):
           cmake.test();
 
     def package(self):
-        self.copy("*.h", dst="include", src="src")
-        self.copy("*.hpp", dst="include", src="src")
+        self.copy("*.h", dst="include/icon", src="icon")
+        self.copy("*.hpp", dst="include/icon", src="icon")
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.dll", dst="bin", keep_path=False)
         self.copy("*.dylib*", dst="lib", keep_path=False)

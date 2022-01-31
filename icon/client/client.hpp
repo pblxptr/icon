@@ -1,10 +1,10 @@
 #pragma once
 
-#include <client/basic_client.hpp>
-
 #include <zmq.hpp>
 #include <boost/asio/io_context.hpp>
-#include <icon.pb.h>
+
+#include <icon/client/basic_client.hpp>
+#include <icon/icon.pb.h>
 
 namespace icon::details
 {

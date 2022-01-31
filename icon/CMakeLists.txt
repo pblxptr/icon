@@ -1,5 +1,5 @@
 
-set (Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR}/src/protobuf)
+set (Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR}/icon/protobuf)
 protobuf_generate_cpp(
   PROTO_SRCS PROTO_HDRS
   protobuf/metadata.proto
@@ -18,7 +18,7 @@ set(SOURCES
 )
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR})
 
 set(STATIC_LIB_NAME ${CMAKE_PROJECT_NAME})
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <metadata.pb.h>
-#include <icon.pb.h>
-#include <core/identity.hpp>
-#include <core/header.hpp>
+#include <icon/metadata.pb.h>
+#include <icon/icon.pb.h>
+#include <icon/core/identity.hpp>
+#include <icon/core/header.hpp>
 
 // TODO: Add basic serializer, and move therer serialization of core::Identity
 namespace icon::details::serialization::protobuf {

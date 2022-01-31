@@ -1,12 +1,12 @@
 #pragma once
 
-#include <core/header.hpp>
-#include <core/identity.hpp>
-#include <serialization/serialization.hpp>
-#include <core/protocol.hpp>
-#include <core/transport.hpp>
-#include <core/unknown_message.hpp>
-#include <client/error.hpp>
+#include <icon/core/header.hpp>
+#include <icon/core/identity.hpp>
+#include <icon/serialization/serialization.hpp>
+#include <icon/core/protocol.hpp>
+#include <icon/core/transport.hpp>
+#include <icon/core/unknown_message.hpp>
+#include <icon/client/error.hpp>
 
 // TODO: Code duplication
 

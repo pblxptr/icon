@@ -1,6 +1,6 @@
-#include <endpoint/basic_endpoint/basic_endpoint.hpp>
-#include <utils/support.hpp>
-#include <endpoint/request.hpp>
+#include <icon/endpoint/basic_endpoint/basic_endpoint.hpp>
+#include <icon/utils/support.hpp>
+#include <icon/endpoint/request.hpp>
 
 namespace icon::details {
 BasicEndpoint::BasicEndpoint(
