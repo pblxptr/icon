@@ -56,6 +56,10 @@ public:
   template<class Message>
   Message get_safe() const
   {
+    if (error_code_.has_value()) {
+      throw std::runtime_error("Response message contains error code thus cannot be deserialized.");
+    }
+
     if (!is<Message>()) {
       throw std::runtime_error("Cannot get response message. Requested destination type does not match to message number contained in header");
     }
