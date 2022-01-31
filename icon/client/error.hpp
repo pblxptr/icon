@@ -1,6 +1,6 @@
 #pragma once
 
-namespace icon::details {
+namespace icon {
   enum class ErrorCode {
     SendTimeout,
     ReceiveTimeout,

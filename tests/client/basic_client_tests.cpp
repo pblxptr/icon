@@ -40,7 +40,7 @@ TEST_CASE("Client connetecs to endpoint")
 
   SECTION( "sending a message when client is connected not throws an exception" ) {
     auto client_func = [&zctx, &bctx]() -> awaitable<void> {
-      auto client = icon::details::BasicClient{zctx, bctx};
+      auto client = icon::BasicClient{zctx, bctx};
       co_await client.async_connect(EndpointS1);
       REQUIRE_NOTHROW(co_await client.async_send(icon::dummy::TestSeqReq{}));
       bctx.stop();
@@ -54,7 +54,7 @@ TEST_CASE("Client connetecs to endpoint")
 
   SECTION( "sending a message when client is disconnected throws and exception" ) {
     auto client_func = [&zctx, &bctx]() -> awaitable<void> {
-      auto client = icon::details::BasicClient{zctx, bctx};
+      auto client = icon::BasicClient{zctx, bctx};
       REQUIRE_THROWS(co_await client.async_send(icon::dummy::TestSeqReq{}));
       bctx.stop();
     };
@@ -66,7 +66,7 @@ TEST_CASE("Client connetecs to endpoint")
 
   SECTION( "sending a message with a timeout returns a response with error code assigned" ) {
     auto client_func = [&zctx, &bctx]() -> awaitable<void> {
-      auto client = icon::details::BasicClient{zctx, bctx};
+      auto client = icon::BasicClient{zctx, bctx};
       co_await client.async_connect(EndpointS1);
       auto rsp = co_await client.async_send(icon::dummy::TestSeqReq{}, std::chrono::seconds(1));
 

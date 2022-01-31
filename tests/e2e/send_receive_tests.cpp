@@ -21,14 +21,14 @@ auto make_endpoint(boost::asio::io_context& bctx, zmq::context_t& zctx, Consumer
 }
 
 template<class Message>
-awaitable<void> async_connect_send(icon::details::BasicClient& client, Message&& message)
+awaitable<void> async_connect_send(icon::BasicClient& client, Message&& message)
 {
   co_await client.async_connect(EndpointS1);
   co_await client.async_send(std::move(message));
 }
 
 template<class Message>
-auto async_connect_send_wait_rsp(icon::details::BasicClient& client, Message&& message) -> decltype(client.async_send<Message>(std::declval<Message>()))
+auto async_connect_send_wait_rsp(icon::BasicClient& client, Message&& message) -> decltype(client.async_send<Message>(std::declval<Message>()))
 {
   co_await client.async_connect(EndpointS1);
   co_return co_await client.async_send(std::move(message));
@@ -51,7 +51,7 @@ void cleanup(boost::asio::io_context& ctx)
 TEST_CASE("Endpoint receives and sends messages") {
   auto bctx = boost::asio::io_context{};
   auto zctx = zmq::context_t{};
-  auto client = icon::details::BasicClient{zctx, bctx};
+  auto client = icon::BasicClient{zctx, bctx};
 
   SECTION( "received message contains valid data" ) {
     constexpr auto seq_req_value { 9999 };

@@ -129,7 +129,7 @@ void server()
   spdlog::info("Server thread stop");
 }
 
-awaitable<void> run_client_for_s1(icon::details::BasicClient& client, const char* endpoint)
+awaitable<void> run_client_for_s1(icon::BasicClient& client, const char* endpoint)
 {
   co_await client.async_connect(endpoint);
 
@@ -151,7 +151,7 @@ awaitable<void> run_client_for_s1(icon::details::BasicClient& client, const char
   spdlog::info("Client1 completed");
 }
 
-awaitable<void> run_client_for_s2(icon::details::BasicClient& client, const char* endpoint)
+awaitable<void> run_client_for_s2(icon::BasicClient& client, const char* endpoint)
 {
   co_await client.async_connect(endpoint);
 
@@ -177,8 +177,8 @@ void client()
 {
   auto bctx_cl = boost::asio::io_context{};
   auto zctx_cl = zmq::context_t{};
-  auto client1 = icon::details::BasicClient{ zctx_cl, bctx_cl };
-  auto client2 = icon::details::BasicClient{ zctx_cl, bctx_cl };
+  auto client1 = icon::BasicClient{ zctx_cl, bctx_cl };
+  auto client2 = icon::BasicClient{ zctx_cl, bctx_cl };
 
   co_spawn(bctx_cl, run_client_for_s1(client1, ZmqServerEndpointS1), detached);
   co_spawn(bctx_cl, run_client_for_s2(client2, ZmqServerEndpointS2), detached);

@@ -12,7 +12,7 @@ TEST_CASE("Response contains data")
   auto message = icon::dummy::TestSeqReq{};
   auto request = icon::details::Request<decltype(message), Serializer_t>{std::move(message)};
   auto buffer = std::move(request).build();
-  auto response = icon::details::Response<Deserializer_t>::create(std::move(buffer));
+  auto response = icon::Response<Deserializer_t>::create(std::move(buffer));
 
     SECTION( "the response contains a valid message" ) {
       REQUIRE(response.is<icon::dummy::TestSeqReq>());

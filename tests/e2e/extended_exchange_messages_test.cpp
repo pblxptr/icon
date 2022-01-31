@@ -108,7 +108,7 @@ auto create_endpoint(boost::asio::io_context& bctx, zmq::context_t& zctx, const 
 }
 
 
-awaitable<void> run_client(icon::details::BasicClient& client, const std::string endpoint)
+awaitable<void> run_client(icon::BasicClient& client, const std::string endpoint)
 {
   co_await client.async_connect(endpoint.c_str());
 
@@ -143,7 +143,7 @@ void worker_thread(std::vector<std::string> endpoint_addresses)
   add_context(&bctx);
 
   auto endpoints = std::vector<std::unique_ptr<icon::Endpoint>>{};
-  auto clients = std::vector<std::unique_ptr<icon::details::BasicClient>>{};
+  auto clients = std::vector<std::unique_ptr<icon::BasicClient>>{};
   auto info = Info{};
   info.thread_id = "Undefined";
 
@@ -155,7 +155,7 @@ void worker_thread(std::vector<std::string> endpoint_addresses)
 
   //Initialize clients
   for (size_t i = 0; i < NumberOfClientsPerThread; i++) {
-    clients.push_back(std::make_unique<icon::details::BasicClient>(zctx, bctx));
+    clients.push_back(std::make_unique<icon::BasicClient>(zctx, bctx));
   }
 
   //Run endpoints

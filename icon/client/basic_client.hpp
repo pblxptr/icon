@@ -47,7 +47,7 @@ auto response = co_await requset.send();
 */
 
 
-namespace icon::details {
+namespace icon {
 class BasicClient
 {
   using Serializer_t = icon::details::serialization::protobuf::ProtobufSerializer;
@@ -118,9 +118,9 @@ private:
     //TODO: instead of timeout guard, awaitable_operators could be used but, they are still in ::experimental
 
     auto executor = co_await boost::asio::this_coro::executor;
-    auto zmq_send_op = ZmqCoSendOp{ socket_, watcher_ };
-    auto guard = TimeoutGuard{executor, [&]() { zmq_send_op.cancel(); }, std::move(timeout)};
-    auto request = Request<Message, Serializer_t>(std::forward<Message>(message));
+    auto zmq_send_op = details::ZmqCoSendOp{ socket_, watcher_ };
+    auto guard = details::TimeoutGuard{executor, [&]() { zmq_send_op.cancel(); }, std::move(timeout)};
+    auto request = details::Request<Message, Serializer_t>(std::forward<Message>(message));
 
     guard.spawn();
     co_await zmq_send_op.async_send(std::move(request).build());
@@ -138,11 +138,11 @@ private:
     spdlog::debug("Basic client: async_receive");
 
     auto executor = co_await boost::asio::this_coro::executor;
-    auto zmq_recv_op = ZmqCoRecvOp{ socket_, watcher_ };
-    auto guard = TimeoutGuard{executor, [&]() { zmq_recv_op.cancel(); }, std::move(timeout)};
+    auto zmq_recv_op = details::ZmqCoRecvOp{ socket_, watcher_ };
+    auto guard = details::TimeoutGuard{executor, [&]() { zmq_recv_op.cancel(); }, std::move(timeout)};
 
     guard.spawn();
-    auto raw_buffer = co_await zmq_recv_op.async_receive<icon::details::transport::RawBuffer_t>();
+    auto raw_buffer = co_await zmq_recv_op.async_receive<details::transport::RawBuffer_t>();
 
     if (guard.expired()) {
       co_return Response_t{ ErrorCode::ReceiveTimeout };
@@ -153,7 +153,7 @@ private:
 
 private:
   zmq::socket_t socket_;
-  Co_StreamWatcher watcher_;
+  details::Co_StreamWatcher watcher_;
   bool is_socket_connected_ { false };
 };
 };// namespace icon::details

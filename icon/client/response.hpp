@@ -10,9 +10,9 @@
 
 // TODO: Code duplication
 
-namespace icon::details {
+namespace icon {
 template<class Deserializer>
-class Response : public core::UnknownMessage
+class Response : public details::core::UnknownMessage
 {
   using Protocol_t = icon::details::Protocol<
     icon::details::transport::Raw_t,
@@ -27,16 +27,16 @@ public:
     , error_code_{std::move(ec)}
   {}
 
-  Response(core::Header header, transport::Raw_t body) : UnknownMessage(std::move(body)), header_{ std::move(header) }
+  Response(details::core::Header header, details::transport::Raw_t body) : UnknownMessage(std::move(body)), header_{ std::move(header) }
   {}
 
-  static Response create(icon::details::transport::RawBuffer_t buffer)
+  static Response create(details::transport::RawBuffer_t buffer)
   {
-    auto parser = Parser<Protocol_t>(std::move(buffer));
-    auto [header, body] = std::move(parser).template extract<icon::details::fields::Header, icon::details::fields::Body>();
+    auto parser = details::Parser<Protocol_t>(std::move(buffer));
+    auto [header, body] = std::move(parser).template extract<details::fields::Header, details::fields::Body>();
 
     return Response{
-      Deserializer::template deserialize<core::Header>(header),
+      Deserializer::template deserialize<details::core::Header>(header),
       std::move(body)
     };
   }
@@ -69,7 +69,7 @@ public:
   }
 
 private:
-  core::Header header_{};
+  details::core::Header header_{};
   std::optional<ErrorCode> error_code_;
 };
 }// namespace icon::details
