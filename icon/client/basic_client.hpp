@@ -70,7 +70,7 @@ public:
     socket_.set(zmq::sockopt::linger, 0);
   }
 
-  awaitable<bool> async_connect(const char* endpoint)
+  awaitable<bool> async_connect(const char* endpoint) //TODO: Change to string, string view etc
   {
     spdlog::debug("BasicClient: connecting to endpoint: {}, is_connected: {}", endpoint, is_socket_connected_);
 
