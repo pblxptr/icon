@@ -17,6 +17,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
   set(CMAKE_CXX_FLAGS "-std=c++20")
 endif()
+add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
 add_subdirectory(icon)
 
