@@ -15,7 +15,7 @@
 #include <icon/protobuf/protobuf_serialization.hpp>
 #include "icon.pb.h"
 
-//TODO: Refactor, it's just a very ugly draft.
+// TODO: Refactor, it's just a very ugly draft.
 
 namespace posix = boost::asio::posix;
 
@@ -35,7 +35,7 @@ auto zctx = zmq::context_t{};
 awaitable<void> message_watcher(boost::asio::io_context& ctx, const size_t expected_msgs, std::function<size_t()> get_actual)
 {
   auto executor = co_await boost::asio::this_coro::executor;
-  auto timer = boost::asio::steady_timer{executor};
+  auto timer = boost::asio::steady_timer{ executor };
 
   while (expected_msgs != get_actual()) {
     spdlog::info("Expected: {}, Actual: {}", expected_msgs, get_actual());
@@ -75,7 +75,7 @@ awaitable<void> s1(boost::asio::io_context& bctx, zmq::context_t& zctx)
 
         co_await context.async_respond(std::move(rsp));
       }))
-    .build();
+                           .build();
 
   co_await endpoint->run();
 }
@@ -195,18 +195,17 @@ void client()
 bool task_completed()
 {
   return (ServerReceivedMessages == NumberOfMessages * 2)
-    && ClientSentMessages == NumberOfMessages * 2;
+         && ClientSentMessages == NumberOfMessages * 2;
 }
 
 void guard_func()
 {
   size_t counter{};
-  while(1) {
+  while (1) {
     if (!task_completed()) {
       ++counter;
       std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-    else {
+    } else {
       break;
     }
 
@@ -214,11 +213,10 @@ void guard_func()
       std::terminate();
     }
   }
-
-
 }
 
-TEST_CASE("Multiple endpoints exchange messages with multiple clients") {
+TEST_CASE("Multiple endpoints exchange messages with multiple clients")
+{
   spdlog::set_level(spdlog::level::info);
 
 
@@ -235,5 +233,4 @@ TEST_CASE("Multiple endpoints exchange messages with multiple clients") {
 
   REQUIRE(ServerReceivedMessages == NumberOfMessages * 2);
   REQUIRE(ClientSentMessages == NumberOfMessages * 2);
-
 }

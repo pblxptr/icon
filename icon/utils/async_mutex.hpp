@@ -13,7 +13,7 @@ public:
   using Timer_t = boost::asio::steady_timer;
 
   explicit AsyncMutex(Executor& executor)
-    : executor_{executor}
+    : executor_{ executor }
   {}
 
   AsyncMutex(const AsyncMutex&) = delete;
@@ -33,7 +33,7 @@ public:
     spdlog::debug("AsyncMutex: trying to acquire lock");
 
     auto ec = boost::system::error_code{};
-    auto timer = Timer_t{executor_};
+    auto timer = Timer_t{ executor_ };
     timer.expires_after(boost::asio::steady_timer::duration::max());
     waiters_.push(&timer);
 
@@ -67,4 +67,4 @@ private:
   std::queue<Timer_t*> waiters_{};
   std::atomic<int> counter_;
 };
-}
+}// namespace icon::details::experimental

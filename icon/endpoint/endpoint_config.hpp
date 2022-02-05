@@ -38,7 +38,7 @@ struct use_service
   Service service;
 };
 
-template<class S1, class S2> //TODO: Consuder to use fold expressions and std::tupe, it allows to support variadic list of services
+template<class S1, class S2>// TODO: Consuder to use fold expressions and std::tupe, it allows to support variadic list of services
 struct use_services
 {
   template<class Builder>
@@ -80,15 +80,15 @@ inline auto address(std::string address)
 }
 
 template<class Service>
-auto use_service(Service&& service) //TODO: Use service and use services are likely to be merged
+auto use_service(Service&& service)// TODO: Use service and use services are likely to be merged
 {
-  return icon::details::use_service{std::forward<Service>(service)};
+  return icon::details::use_service{ std::forward<Service>(service) };
 }
 
 template<class... Services>
 auto use_services(Services&&... services)
 {
-  return icon::details::use_services<Services...>{std::forward<Services>(services)...};
+  return icon::details::use_services<Services...>{ std::forward<Services>(services)... };
 }
 
 }// namespace icon

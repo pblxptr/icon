@@ -9,14 +9,14 @@
 #include <zmq_addon.hpp>
 #include <cassert>
 
-//TODO: Remove usings
+// TODO: Remove usings
 
 namespace {
-  namespace posix = boost::asio::posix;
-  using boost::asio::awaitable;
-  using boost::asio::co_spawn;
-  using boost::asio::detached;
-  using boost::asio::use_awaitable;
+namespace posix = boost::asio::posix;
+using boost::asio::awaitable;
+using boost::asio::co_spawn;
+using boost::asio::detached;
+using boost::asio::use_awaitable;
 }// namespace
 
 namespace icon::details {
@@ -38,11 +38,10 @@ public:
   using Result_t = std::tuple<bool, boost::system::error_code>;
 
   Co_StreamWatcher(zmq::socket_t& socket, boost::asio::io_context& context)
-    : socket_{ socket }
-    , streamd_{ context }
-    {
-      spdlog::debug("SteramWatcher: ctor");
-    }
+    : socket_{ socket }, streamd_{ context }
+  {
+    spdlog::debug("SteramWatcher: ctor");
+  }
 
   Co_StreamWatcher(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher& operator=(const Co_StreamWatcher&) = delete;
@@ -113,7 +112,7 @@ private:
 
     spdlog::debug("StreamWatcher: returned from async_wait with: {}", ec.message());
 
-    co_return  std::tuple{ check_ops(op), ec };
+    co_return std::tuple{ check_ops(op), ec };
   }
 
   bool check_ops(const ZmqOperation op)
@@ -140,6 +139,7 @@ private:
       streamd_.release();
     }
   }
+
 private:
   zmq::socket_t& socket_;
   boost::asio::posix::stream_descriptor streamd_;

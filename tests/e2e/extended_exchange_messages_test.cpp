@@ -22,15 +22,15 @@ struct Info
   std::vector<std::string> clients;
 };
 
-constexpr auto NumberOfThreads { 4 };
-constexpr auto NumberOfEndpoints { 10 };
-constexpr auto NumberOfClientsPerThread { 8 };
-constexpr auto NumberOfMessagesPerClient { 50 };
-constexpr auto MaxExecutionTime { std::chrono::minutes(5) };
+constexpr auto NumberOfThreads{ 4 };
+constexpr auto NumberOfEndpoints{ 10 };
+constexpr auto NumberOfClientsPerThread{ 8 };
+constexpr auto NumberOfMessagesPerClient{ 50 };
+constexpr auto MaxExecutionTime{ std::chrono::minutes(5) };
 constexpr auto ExpectedProocessedMessages = NumberOfClientsPerThread * NumberOfThreads * NumberOfMessagesPerClient;
 
 
-std::atomic<size_t> ProcessedMessages { 0 };
+std::atomic<size_t> ProcessedMessages{ 0 };
 
 std::vector<std::string> addresses;
 
@@ -48,7 +48,7 @@ using boost::asio::use_awaitable;
 
 void add_info(Info info)
 {
-  auto lock = std::scoped_lock{info_mtx};
+  auto lock = std::scoped_lock{ info_mtx };
   infos.push_back(std::move(info));
 }
 
@@ -69,7 +69,7 @@ void dump_info(const Info& info)
 
 void add_context(boost::asio::io_context* ctx)
 {
-  auto lock = std::scoped_lock{contexts_mtx};
+  auto lock = std::scoped_lock{ contexts_mtx };
   spdlog::debug("Add context");
 
   contexts.emplace_back(ctx);
@@ -78,7 +78,7 @@ void add_context(boost::asio::io_context* ctx)
 size_t rnd(const size_t min, const size_t max)
 {
   static auto rd = std::random_device{};
-  static auto gen = std::mt19937{rd()};
+  static auto gen = std::mt19937{ rd() };
   auto dist = std::uniform_int_distribution<size_t>(min, max);
 
   return dist(gen);
@@ -137,7 +137,7 @@ void worker_thread(std::vector<std::string> endpoint_addresses)
   auto zctx = zmq::context_t{};
 
   using work_guard_type =
-  boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+    boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
   work_guard_type work_guard(bctx.get_executor());
 
   add_context(&bctx);
@@ -147,19 +147,19 @@ void worker_thread(std::vector<std::string> endpoint_addresses)
   auto info = Info{};
   info.thread_id = "Undefined";
 
-  //Initialize endpoints
+  // Initialize endpoints
   for (const auto& addr : endpoint_addresses) {
     info.endpoints.push_back(addr);
     endpoints.push_back(create_endpoint(bctx, zctx, addr));
   }
 
-  //Initialize clients
+  // Initialize clients
   for (size_t i = 0; i < NumberOfClientsPerThread; i++) {
     clients.push_back(std::make_unique<icon::BasicClient>(zctx, bctx));
   }
 
-  //Run endpoints
-  for(auto& e : endpoints) {
+  // Run endpoints
+  for (auto& e : endpoints) {
     co_spawn(bctx, e->run(), detached);
   }
 
@@ -217,7 +217,6 @@ void guard_thread()
   auto deadline = now + MaxExecutionTime;
 
 
-
   while (true) {
     if (std::chrono::system_clock::now() > deadline) {
       spdlog::error("Timeout reached. Terminate.");
@@ -251,7 +250,8 @@ void print_summary()
 }
 
 
-TEST_CASE("Multiple endpooints and clients spawned in multiple threads are exchanging messages.") {
+TEST_CASE("Multiple endpooints and clients spawned in multiple threads are exchanging messages.")
+{
   spdlog::set_level(spdlog::level::debug);
 
   generate_addresses(NumberOfEndpoints);
@@ -273,18 +273,17 @@ TEST_CASE("Multiple endpooints and clients spawned in multiple threads are excha
 
   auto threads = std::vector<std::thread>{};
 
-  //Push Worker threads
+  // Push Worker threads
   for (size_t i = 0; i < NumberOfThreads; i++) {
     threads.push_back(std::thread(worker_thread, addr_per_th[i]));
   }
 
-  //Push guard thread
+  // Push guard thread
   threads.push_back(std::thread(guard_thread));
 
-  for (auto& th: threads) {
+  for (auto& th : threads) {
     th.join();
   }
 
   print_summary();
 }
-

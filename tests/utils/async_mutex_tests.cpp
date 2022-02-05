@@ -12,16 +12,16 @@ using boost::asio::use_awaitable;
 
 using namespace icon::details::experimental;
 
-TEST_CASE("Multiple coroutines can use the same resource.") {
+TEST_CASE("Multiple coroutines can use the same resource.")
+{
   auto ctx = boost::asio::io_context{};
-  auto timer = boost::asio::steady_timer{ctx};
-  auto mutex = AsyncMutex{ctx};
+  auto timer = boost::asio::steady_timer{ ctx };
+  auto mutex = AsyncMutex{ ctx };
   auto propagage_exception = [](auto eptr) {
     REQUIRE(!eptr);
   };
 
   auto func = [&timer, &mutex](std::chrono::milliseconds duration) -> awaitable<void> {
-
     co_await mutex.async_lock();
 
     auto ec = boost::system::error_code{};

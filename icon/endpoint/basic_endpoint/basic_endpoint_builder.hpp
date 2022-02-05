@@ -6,7 +6,6 @@ namespace icon::details {
 class BasicEndpointBuilder
 {
 public:
-
   void use_service(boost::asio::io_context& ctx)
   {
     bctx_ = std::ref(ctx);

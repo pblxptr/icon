@@ -23,8 +23,7 @@ class Response : public details::core::UnknownMessage
 
 public:
   Response(ErrorCode ec)
-    : UnknownMessage()
-    , error_code_{std::move(ec)}
+    : UnknownMessage(), error_code_{ std::move(ec) }
   {}
 
   Response(details::core::Header header, details::transport::Raw_t body) : UnknownMessage(std::move(body)), header_{ std::move(header) }
@@ -76,4 +75,4 @@ private:
   details::core::Header header_{};
   std::optional<ErrorCode> error_code_;
 };
-}// namespace icon::details
+}// namespace icon

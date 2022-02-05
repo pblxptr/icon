@@ -6,13 +6,12 @@
 #include <icon/client/basic_client.hpp>
 #include <icon/icon.pb.h>
 
-namespace icon::details
-{
+namespace icon::details {
 class Client : public BasicClient
 {
 public:
   BasicClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
-    : BasicClient{zctx, bctx}
+    : BasicClient{ zctx, bctx }
   {}
 
   awaitable<bool> async_connect(const char* endpoint)
@@ -54,6 +53,6 @@ private:
   }
 
 private:
-  bool is_connection_established_ { false };
+  bool is_connection_established_{ false };
 };
-}
+}// namespace icon::details

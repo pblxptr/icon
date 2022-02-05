@@ -23,7 +23,6 @@ public:
     : socket_{ socket }, watcher_{ watcher } {}
 
 
-
   template<class RawBuffer>
   awaitable<RawBuffer> async_receive()
   {
@@ -117,4 +116,3 @@ private:
   Co_StreamWatcher& watcher_;
 };
 }// namespace icon::details
-
