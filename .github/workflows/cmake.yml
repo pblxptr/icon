@@ -39,17 +39,17 @@ jobs:
       id: cache-boost
       uses: actions/cache@v2
       with:
-        path: ${{github.workspace}}/boost_1_77_0
-        key:  boost_1_77_0
+        path: ${{github.workspace}}/boost_1_78_0
+        key:  boost_1_78_0
 
     - name: Download and bootstrap Boost
       if: steps. cache-boost.outputs.cache-hit != 'true'
-      run: wget https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/boost_1_77_0.tar.gz
-          && tar -zxf boost_1_77_0.tar.gz
-          && cd boost_1_77_0 && ./bootstrap.sh --prefix=/usr
+      run: wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz
+          && tar -zxf boost_1_78_0.tar.gz
+          && cd boost_1_78_0 && ./bootstrap.sh --prefix=/usr
 
     - name: Install Boost
-      run: cd boost_1_77_0 && sudo ./b2 install
+      run: cd boost_1_78_0 && sudo ./b2 install
           && cd ${{github.workspace}}
 
     ######### ZMQ #########
