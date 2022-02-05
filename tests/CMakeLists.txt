@@ -1,22 +1,24 @@
 
+cmake_minimum_required(VERSION 3.18)
 
-#Workaround for clang, Boost asio has relased coroutines without fully supported clang
-
+# -----------------------------------------------------------------------
+# Setup external packages
+# -----------------------------------------------------------------------
 find_package(Catch2 3 REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(Protobuf REQUIRED)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
-  set(CMAKE_CXX_FLAGS "-std=c++20")
-endif()
-
-set (Protobuf_IMPORT_DIRS
+# -----------------------------------------------------------------------
+# Generate protobuf
+# -----------------------------------------------------------------------
+set(Protobuf_IMPORT_DIRS
   ${CMAKE_SOURCE_DIR}/icon/protobuf
   ${CMAKE_SOURCE_DIR}/tests
 )
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-  ../icon/protobuf/metadata.proto
-  ../icon/protobuf/icon.proto
-  ./dummy.proto
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRSS
+  ${CMAKE_SOURCE_DIR}/icon/protobuf/metadata.proto
+  ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+  ${CMAKE_SOURCE_DIR}/tests/dummy.proto
 )
 
 set(TEST_LIBRARIES
@@ -25,12 +27,14 @@ set(TEST_LIBRARIES
   protobuf
   zmq
   sodium
-  spdlog
+  spdlog::spdlog
   fmt
   Catch2::Catch2WithMain
 )
 
-### UNIT TESTS ###
+# -----------------------------------------------------------------------
+# Build UnitTests executable
+# -----------------------------------------------------------------------
 add_executable(${CMAKE_PROJECT_NAME}_unittests
   client/basic_client_tests.cpp
   client/request_tests.cpp
@@ -41,13 +45,17 @@ add_executable(${CMAKE_PROJECT_NAME}_unittests
 )
 
 add_dependencies(${CMAKE_PROJECT_NAME}_unittests ${CMAKE_PROJECT_NAME})
+target_include_directories(${CMAKE_PROJECT_NAME}_unittests PRIVATE
+  ${spdlog_INCLUDE_DIRS}
+)
 target_link_libraries(${CMAKE_PROJECT_NAME}_unittests PRIVATE
   ${TEST_LIBRARIES}
 )
-
 add_test(NAME UnitTests COMMAND ${CMAKE_PROJECT_NAME}_unittests)
 
-### INTEGRATION TESTS ###
+# -----------------------------------------------------------------------
+# Build IntegrationTests executable
+# -----------------------------------------------------------------------
 add_executable(${CMAKE_PROJECT_NAME}_e2e
   e2e/basic_exchange_messages_test.cpp
   e2e/extended_exchange_messages_test.cpp

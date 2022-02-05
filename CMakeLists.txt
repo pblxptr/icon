@@ -10,6 +10,14 @@ set(CMAKE_CXX_FLAGS "-Wno-deprecated")
 
 include(cmake/StaticAnalyzers.cmake)
 
+# -----------------------------------------------------------------------
+# Workaround for clang, Boost asio has relased coroutines without fully supported clang
+# -----------------------------------------------------------------------
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
+  set(CMAKE_CXX_FLAGS "-std=c++20")
+endif()
+
 add_subdirectory(icon)
 
 if (ENABLE_TESTING)
