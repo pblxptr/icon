@@ -72,13 +72,13 @@ generate_export_header(icon)
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/icon/iconConfigVersion.cmake"
-  VERSION ${Upstream_VERSION}
+  VERSION ${ICON_VERSION}
   COMPATIBILITY AnyNewerVersion
 )
 
 export(EXPORT iconTargets
   FILE "${CMAKE_CURRENT_BINARY_DIR}/icon/iconTargets.cmake"
-  NAMESPACE Upstream::
+  NAMESPACE icon::
 )
 configure_file(${CMAKE_SOURCE_DIR}/cmake/iconConfig.cmake
   "${CMAKE_CURRENT_BINARY_DIR}/icon/iconConfig.cmake"
@@ -89,7 +89,7 @@ install(EXPORT iconTargets
   FILE
     iconTargets.cmake
   NAMESPACE
-    Upstream::
+  icon::
   DESTINATION
     ${ConfigPackageLocation}
 )
