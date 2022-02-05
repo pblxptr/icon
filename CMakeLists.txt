@@ -2,16 +2,13 @@ cmake_minimum_required(VERSION 3.18)
 project(icon CXX)
 set(CMAKE_CXX_STANDARD 20)
 
-option(ENABLE_TESTING "Enable building and executing tests" OFF)
+set(Upstream_VERSION 0.1)
 
-find_package(Boost 1.78 REQUIRED coroutine)
-find_package(Protobuf REQUIRED)
+option(ENABLE_TESTING "Enable building and executing tests" OFF)
 
 set(CMAKE_CXX_FLAGS "-Wno-deprecated")
 
 include(cmake/StaticAnalyzers.cmake)
-
-include_directories(${CMAKE_BINARY_DIR})
 
 add_subdirectory(icon)
 

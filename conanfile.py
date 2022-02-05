@@ -23,7 +23,8 @@ class IconConan(ConanFile):
     }
     generators = [
       "cmake",
-      "cmake_find_package"
+      "cmake_find_package",
+      "cmake_paths"
     ]
     exports_sources = [
       "conan/CMakeLists.txt",

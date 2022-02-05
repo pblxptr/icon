@@ -4,7 +4,7 @@ boost/1.78.0
 cppzmq/4.8.1
 protobuf/3.19.2
 spdlog/1.9.2
-catch2/2.13.8
 
 [generators]
 cmake
+cmake_paths
