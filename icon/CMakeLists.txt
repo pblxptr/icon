@@ -2,7 +2,7 @@
 # Setup external packages
 # -----------------------------------------------------------------------
 find_package(spdlog REQUIRED)
-find_package(Boost 1.78 REQUIRED coroutine)
+find_package(Boost 1.77 REQUIRED coroutine)
 find_package(Protobuf REQUIRED)
 set (Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR}/icon/protobuf)
 
