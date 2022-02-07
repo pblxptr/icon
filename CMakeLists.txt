@@ -6,7 +6,7 @@ set(ICON_VERSION 0.1)
 
 option(ENABLE_TESTING "Enable building and executing tests" OFF)
 
-set(CMAKE_CXX_FLAGS "-Wno-deprecated")
+add_compile_options("-Wno-deprecated")
 
 include(cmake/StaticAnalyzers.cmake)
 
