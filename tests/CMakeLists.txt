@@ -35,6 +35,9 @@ set(TEST_LIBRARIES
 # -----------------------------------------------------------------------
 # Build UnitTests executable
 # -----------------------------------------------------------------------
+include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_BINARY_DIR})
+
 add_executable(${CMAKE_PROJECT_NAME}_unittests
   client/basic_client_tests.cpp
   client/request_tests.cpp

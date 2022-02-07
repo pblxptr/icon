@@ -33,6 +33,8 @@ add_library(objlib OBJECT
   ${PROTO_HDRS}
 )
 
+target_include_directories(objlib PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(objlib PRIVATE
   lpthread
   spdlog::spdlog
