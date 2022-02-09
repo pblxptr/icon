@@ -12,7 +12,7 @@ find_package(Protobuf REQUIRED)
 # Generate protobuf
 # -----------------------------------------------------------------------
 set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRSS
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
   ${CMAKE_SOURCE_DIR}/tests/dummy.proto
 )
 
@@ -31,7 +31,7 @@ set(TEST_LIBRARIES
 # Build UnitTests executable
 # -----------------------------------------------------------------------
 include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_BINARY_DIR}/icon)
 
 add_executable(${CMAKE_PROJECT_NAME}_unittests
   client/basic_client_tests.cpp

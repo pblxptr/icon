@@ -8,24 +8,25 @@ find_package(Protobuf REQUIRED)
 # -----------------------------------------------------------------------
 # Generate proto files
 # -----------------------------------------------------------------------
-protobuf_generate(
-  IMPORT_DIRS ${CMAKE_SOURCE_DIR}
-  LANGUAGE
-    cpp
-  OUT_VAR
-    PROTO_SRCS
-    PROTO_HDRS
-  PROTOS
-    ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-    ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
-  PROTOC_OUT_DIR
-    ${CMAKE_BINARY_DIR}/icon
-)
-
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-#   ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-#   ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+# protobuf_generate(
+#   IMPORT_DIRS ${CMAKE_SOURCE_DIR}
+#   LANGUAGE
+#     cpp
+#   OUT_VAR
+#     PROTO_SRCS
+#     PROTO_HDRS
+#   PROTOS
+#     ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
+#     ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+#   PROTOC_OUT_DIR
+#     ${CMAKE_BINARY_DIR}/icon
 # )
+
+set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+  ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
+  ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+)
 
 # -----------------------------------------------------------------------
 # Make static library from objlib
