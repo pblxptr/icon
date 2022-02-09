@@ -4,7 +4,6 @@
 find_package(spdlog REQUIRED)
 find_package(Boost 1.77 REQUIRED coroutine)
 find_package(Protobuf REQUIRED)
-find_package(shm-iw REQUIRED)
 
 # -----------------------------------------------------------------------
 # Generate proto files
