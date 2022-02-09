@@ -38,8 +38,8 @@ public:
 private:
   awaitable<void> init_connection_async()
   {
-    using ConEstablishReq_t = icon::transport::ConnectionEstablishReq;
-    using ConEstablishCfm_t = icon::transport::ConnectionEstablishCfm;
+    using ConEstablishReq_t = icon::ConnectionEstablishReq;
+    using ConEstablishCfm_t = icon::ConnectionEstablishCfm;
 
     const auto response = co_await async_send_with_response(ConEstablishReq_t{});
 

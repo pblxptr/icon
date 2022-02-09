@@ -5,7 +5,7 @@
 #include <icon/client/basic_client.hpp>
 #include <icon/endpoint/endpoint_config.hpp>
 #include <icon/protobuf/protobuf_serialization.hpp>
-#include <dummy.pb.h>
+#include <tests/dummy.pb.h>
 
 constexpr auto EndpointS1 = "tcp://127.0.0.1:6667";
 

@@ -88,7 +88,6 @@ auto create_endpoint(boost::asio::io_context& bctx, zmq::context_t& zctx, const 
 {
   using namespace icon;
   using namespace icon::details;
-  using namespace icon::transport;
 
   return icon::setup_default_endpoint(
     icon::use_services(bctx, zctx),
@@ -113,14 +112,14 @@ awaitable<void> run_client(icon::BasicClient& client, const std::string endpoint
   co_await client.async_connect(endpoint.c_str());
 
   for (size_t i = 0; i < NumberOfMessagesPerClient; i++) {
-    auto seq_req = icon::transport::TestSeqReq{};
+    auto seq_req = icon::TestSeqReq{};
     seq_req.set_seq(i);
 
     spdlog::debug("Client send...");
 
     auto rsp = co_await client.async_send(std::move(seq_req));
-    assert(rsp.is<icon::transport::TestSeqCfm>());
-    const auto msg = rsp.get<icon::transport::TestSeqCfm>();
+    assert(rsp.is<icon::TestSeqCfm>());
+    const auto msg = rsp.get<icon::TestSeqCfm>();
 
     spdlog::debug("Client received...");
 

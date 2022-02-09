@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-import "metadata.proto";
+import "icon/metadata/metadata.proto";
 
-package icon.transport;
+package icon;
 
 message Header
 {
@@ -11,32 +11,32 @@ message Header
 
 message ConnectionEstablishReq
 {
-  option (metadata.MESSAGE_NUMBER) = 0x10000001;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000001;
 }
 
 message ConnectionEstablishCfm
 {
-  option (metadata.MESSAGE_NUMBER) = 0x10000002;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000002;
 }
 
 message HeartbeatReq
 {
-  option (metadata.MESSAGE_NUMBER) = 0x10000003;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000003;
 }
 
 message HeartbeatCfm
 {
-  option (metadata.MESSAGE_NUMBER) = 0x10000004;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000004;
 }
 
 message TestSeqReq
 {
-  option (metadata.MESSAGE_NUMBER) = 0x10000005;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000005;
   uint32 seq = 1;
 }
 
 message TestSeqCfm
 {
-  option (metadata.MESSAGE_NUMBER) = 0x10000006;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000006;
   uint32 seq = 1;
 }

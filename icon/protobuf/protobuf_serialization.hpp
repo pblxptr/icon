@@ -1,9 +1,9 @@
 #pragma once
 
-#include <icon/metadata.pb.h>
-#include <icon/icon.pb.h>
 #include <icon/core/identity.hpp>
 #include <icon/core/header.hpp>
+#include <icon/protobuf/icon.pb.h>
+#include <icon/metadata/metadata.pb.h>
 
 // TODO: Add basic serializer, and move therer serialization of core::Identity
 namespace icon::details::serialization::protobuf {
@@ -33,7 +33,7 @@ public:
 
   static zmq::message_t serialize(const core::Header& header)
   {
-    auto th = icon::transport::Header{};
+    auto th = icon::Header{};
     th.set_message_number(header.message_number());
 
     return serialize(th);
@@ -62,7 +62,7 @@ public:
 template<>
 inline core::Header ProtobufDeserializer::deserialize<core::Header>(const zmq::message_t& src)
 {
-  auto th = deserialize<icon::transport::Header>(src);
+  auto th = deserialize<icon::Header>(src);
 
   return core::Header{ th.message_number() };
 }

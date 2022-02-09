@@ -13,7 +13,6 @@
 #include <icon/endpoint/endpoint_config.hpp>
 #include <icon/endpoint/message_context.hpp>
 #include <icon/protobuf/protobuf_serialization.hpp>
-#include "icon.pb.h"
 
 // TODO: Refactor, it's just a very ugly draft.
 
@@ -55,7 +54,6 @@ awaitable<void> s1(boost::asio::io_context& bctx, zmq::context_t& zctx)
 {
   using namespace icon;
   using namespace icon::details;
-  using namespace icon::transport;
 
   static auto endpoint = icon::setup_default_endpoint(
     icon::use_services(bctx, zctx),
@@ -84,7 +82,6 @@ awaitable<void> s2(boost::asio::io_context& bctx, zmq::context_t& zctx)
 {
   using namespace icon;
   using namespace icon::details;
-  using namespace icon::transport;
 
   static auto endpoint = icon::setup_default_endpoint(
     icon::use_services(bctx, zctx),
@@ -113,7 +110,6 @@ void server()
 {
   using namespace icon;
   using namespace icon::details;
-  using namespace icon::transport;
 
   static auto bctx = boost::asio::io_context{};
 
@@ -134,14 +130,14 @@ awaitable<void> run_client_for_s1(icon::BasicClient& client, const char* endpoin
   co_await client.async_connect(endpoint);
 
   for (size_t i = 0; i < NumberOfMessages; i++) {
-    auto seq_req = icon::transport::TestSeqReq{};
+    auto seq_req = icon::TestSeqReq{};
     seq_req.set_seq(i);
 
     spdlog::info("C1: sending seq req: {}", i);
 
     auto rsp = co_await client.async_send(std::move(seq_req));
-    assert(rsp.is<icon::transport::TestSeqCfm>());
-    const auto msg = rsp.get<icon::transport::TestSeqCfm>();
+    assert(rsp.is<icon::TestSeqCfm>());
+    const auto msg = rsp.get<icon::TestSeqCfm>();
 
     assert(msg.seq() == i * 2);
     ClientSentMessages++;
@@ -156,14 +152,14 @@ awaitable<void> run_client_for_s2(icon::BasicClient& client, const char* endpoin
   co_await client.async_connect(endpoint);
 
   for (size_t i = 0; i < NumberOfMessages; i++) {
-    auto seq_req = icon::transport::TestSeqReq{};
+    auto seq_req = icon::TestSeqReq{};
     seq_req.set_seq(i);
 
     spdlog::info("C2: sending seq req: {}", i);
 
     auto rsp = co_await client.async_send(std::move(seq_req));
-    assert(rsp.is<icon::transport::TestSeqCfm>());
-    const auto msg = rsp.get<icon::transport::TestSeqCfm>();
+    assert(rsp.is<icon::TestSeqCfm>());
+    const auto msg = rsp.get<icon::TestSeqCfm>();
 
     assert(msg.seq() == i + 1);
     ClientSentMessages++;
