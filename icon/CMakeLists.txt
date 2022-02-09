@@ -8,6 +8,11 @@ find_package(Protobuf REQUIRED)
 # -----------------------------------------------------------------------
 # Generate proto files
 # -----------------------------------------------------------------------
+#TODO: TEMP
+message(WARNING ${CMAKE_MAJOR_VERSION})
+message(WARNING ${CMAKE_MINOR_VERSION})
+message(WARNING ${CMAKE_PATCH_VERSION})
+
 protobuf_generate(
   IMPORT_DIRS ${CMAKE_SOURCE_DIR}
   LANGUAGE
