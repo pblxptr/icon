@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <spdlog/spdlog.h>
+#include <icon/utils/logger.hpp>
 #include <queue>
 #include <atomic>
 
@@ -23,23 +23,23 @@ public:
 
   boost::asio::awaitable<void> async_lock()
   {
-    spdlog::debug("AsyncMutex: async_lock");
+    icon::utils::get_logger()->debug("AsyncMutex: async_lock");
 
     if (counter_++ == 0) {
-      spdlog::debug("AsyncMutex: first lock, retrun");
+      icon::utils::get_logger()->debug("AsyncMutex: first lock, retrun");
       co_return;
     }
 
-    spdlog::debug("AsyncMutex: trying to acquire lock");
+    icon::utils::get_logger()->debug("AsyncMutex: trying to acquire lock");
 
     auto ec = boost::system::error_code{};
     auto timer = Timer_t{ executor_ };
     timer.expires_after(boost::asio::steady_timer::duration::max());
     waiters_.push(&timer);
 
-    spdlog::debug("AsyncMutex: lock already acquired, waiting");
+    icon::utils::get_logger()->debug("AsyncMutex: lock already acquired, waiting");
     co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
-    spdlog::debug("AsyncMutex: locl acquired");
+    icon::utils::get_logger()->debug("AsyncMutex: locl acquired");
   }
 
   void unlock()
@@ -54,7 +54,7 @@ public:
       return;
     }
 
-    spdlog::debug("AsyncMutex: unlock");
+    icon::utils::get_logger()->debug("AsyncMutex: unlock");
 
     auto* next = waiters_.front();
     next->cancel();

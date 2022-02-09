@@ -26,7 +26,7 @@ public:
   {
     auto [can_send, ec] = co_await watcher_.async_wait_send();
 
-    spdlog::debug("ZmqCoSendOp: can_send - {}, error_code: {}", can_send, ec.message());
+   icon::utils::get_logger()->debug("ZmqCoSendOp: can_send - {}, error_code: {}", can_send, ec.message());
 
     if (!can_send || ec) {
       co_return 0;
@@ -36,13 +36,15 @@ public:
     assert(nsent.has_value());
     assert(nsent != 0);
 
+    icon::utils::get_logger()->debug("ZmqCoSendOp: sent {} parts", nsent.value_or(0));
+
     co_return nsent.value_or(0);
   }
 
   // template<class RawBuffer>
   // awaitable<void> async_send(RawBuffer&& buffer)
   // {
-  //   spdlog::debug("ZmqCoSendOp: async_send() for mulipart message.");
+  //  icon::utils::get_logger()->debug("ZmqCoSendOp: async_send() for mulipart message.");
 
   //   const auto [result, ec] = co_await watcher_.async_wait_send();
   //   assert(ret);
@@ -51,14 +53,14 @@ public:
   //     socket_, std::forward<RawBuffer>(buffer), zmq::send_flags::dontwait);
   //   assert(nmessages == buffer.size());
 
-  //   spdlog::debug("ZmqCoSendOp: async_send() for mulipart message - sent.");
+  //  icon::utils::get_logger()->debug("ZmqCoSendOp: async_send() for mulipart message - sent.");
   // }
 
   // template<class RawBuffer>
   // awaitable<void> async_send(
   //   RawBuffer&& buffer) requires std::is_same_v<RawBuffer, zmq::message_t>
   // {
-  //   spdlog::debug("ZmqCoSendOp: async_send() for single.");
+  //  icon::utils::get_logger()->debug("ZmqCoSendOp: async_send() for single.");
 
   //   const auto [result, ec] = co_await watcher_.async_wait_send();
   //   assert(ret);

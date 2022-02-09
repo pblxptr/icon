@@ -3,6 +3,7 @@
 #include <icon/core/identity.hpp>
 #include <icon/core/header.hpp>
 #include <icon/protobuf/icon.pb.h>
+#include <icon/utils/logger.hpp>
 #include <icon/metadata/metadata.pb.h>
 
 // TODO: Add basic serializer, and move therer serialization of core::Identity
@@ -11,9 +12,16 @@ class ProtobufData
 {
 public:
   template<class T>
-  requires(!std::is_same_v<T, core::Header>) static size_t message_number_for()
+  requires(!std::is_same_v<T, core::Header>)
+  static size_t message_number_for()
   {
-    return T{}.GetDescriptor()->options().GetExtension(icon::metadata::MESSAGE_NUMBER);
+    auto inst = T{};
+    const auto name = inst.GetDescriptor()->full_name();
+    const auto number = inst.GetDescriptor()->options().GetExtension(icon::metadata::MESSAGE_NUMBER);
+
+    icon::utils::get_logger()->debug("ProtobufData: message number for {} is 0x{:x}", name, number);
+
+    return number;
   }
 };
 

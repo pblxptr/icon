@@ -4,6 +4,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio.hpp>
 #include <spdlog/spdlog.h>
+#include <icon/utils/logger.hpp>
 #include <icon/utils/flags.hpp>
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
@@ -40,7 +41,7 @@ public:
   Co_StreamWatcher(zmq::socket_t& socket, boost::asio::io_context& context)
     : socket_{ socket }, streamd_{ context }
   {
-    spdlog::debug("SteramWatcher: ctor");
+   icon::utils::get_logger()->debug("SteramWatcher: ctor");
   }
 
   Co_StreamWatcher(const Co_StreamWatcher&) = delete;
@@ -50,14 +51,14 @@ public:
 
   ~Co_StreamWatcher()
   {
-    spdlog::debug("SteramWatcher: dtor");
+   icon::utils::get_logger()->debug("SteramWatcher: dtor");
 
     stop();
   }
 
   awaitable<Result_t> async_wait_receive(bool auto_repeat = true)
   {
-    spdlog::debug("StreamWatcher: async_wait_receive()");
+   icon::utils::get_logger()->debug("StreamWatcher: async_wait_receive()");
 
     auto [can_receive, ec] = co_await setup_async_wait(ZmqOperation::Read, Wait_t::wait_read);
 
@@ -74,7 +75,7 @@ public:
 
   awaitable<Result_t> async_wait_send()
   {
-    spdlog::debug("StreamWatcher: async_wait_send()");
+    icon::utils::get_logger()->debug("StreamWatcher: async_wait_send()");
 
     co_return co_await setup_async_wait(ZmqOperation::Write, Wait_t::wait_write);
   }
@@ -83,7 +84,7 @@ public:
   {
     auto ec = boost::system::error_code{};
 
-    spdlog::debug("StreamWatcher: cancel(), ec: {}", ec.message());
+    icon::utils::get_logger()->debug("StreamWatcher: cancel(), ec: {}", ec.message());
 
     streamd_.cancel(ec);
 
@@ -97,10 +98,10 @@ private:
   {
     auto ec = boost::system::error_code{};
 
-    spdlog::debug("StreamWatcher: setup_async_wait()");
+   icon::utils::get_logger()->debug("StreamWatcher: setup_async_wait()");
 
     if (!streamd_.is_open()) {
-      spdlog::debug("StreamWatcher: assigning socket descriptor");
+     icon::utils::get_logger()->debug("StreamWatcher: assigning socket descriptor");
       streamd_.assign(socket_.get(zmq::sockopt::fd));
     }
 
@@ -110,7 +111,7 @@ private:
 
     co_await streamd_.async_wait(wait_type, boost::asio::redirect_error(use_awaitable, ec));
 
-    spdlog::debug("StreamWatcher: returned from async_wait with: {}", ec.message());
+   icon::utils::get_logger()->debug("StreamWatcher: returned from async_wait with: {}", ec.message());
 
     co_return std::tuple{ check_ops(op), ec };
   }
@@ -130,12 +131,12 @@ private:
 
   void stop()
   {
-    spdlog::debug("StreamWatcher: stop()");
+   icon::utils::get_logger()->debug("StreamWatcher: stop()");
 
     if (streamd_.is_open()) {
       cancel();
 
-      spdlog::debug("StrwamWatcher: stop(), release()");
+     icon::utils::get_logger()->debug("StrwamWatcher: stop(), release()");
       streamd_.release();
     }
   }

@@ -37,15 +37,15 @@ awaitable<void> message_watcher(boost::asio::io_context& ctx, const size_t expec
   auto timer = boost::asio::steady_timer{ executor };
 
   while (expected_msgs != get_actual()) {
-    spdlog::info("Expected: {}, Actual: {}", expected_msgs, get_actual());
+    icon::utils::get_logger()->info("Expected: {}, Actual: {}", expected_msgs, get_actual());
 
     timer.expires_after(std::chrono::seconds(1));
     co_await timer.async_wait(use_awaitable);
 
-    spdlog::info("Test");
+    icon::utils::get_logger()->info("Test");
   }
 
-  spdlog::info("Reseting context");
+  icon::utils::get_logger()->info("Reseting context");
 
   ctx.stop();
 }
@@ -60,12 +60,12 @@ awaitable<void> s1(boost::asio::io_context& bctx, zmq::context_t& zctx)
     icon::address(ZmqServerEndpointS1),
     icon::consumer<TestSeqReq>(
       [](MessageContext<TestSeqReq> context) -> awaitable<void> {
-        spdlog::info("S1: TestSeqReq");
+        icon::utils::get_logger()->info("S1: TestSeqReq");
         auto& req = context.message();
         auto seq_req = req.seq();
         auto seq_rsp = seq_req * 2;
 
-        spdlog::info("S1: recevided seq: {}, sending: {}", seq_req, seq_rsp);
+        icon::utils::get_logger()->info("S1: recevided seq: {}, sending: {}", seq_req, seq_rsp);
         auto rsp = TestSeqCfm{};
         rsp.set_seq(seq_rsp);
 
@@ -88,12 +88,12 @@ awaitable<void> s2(boost::asio::io_context& bctx, zmq::context_t& zctx)
     icon::address(ZmqServerEndpointS2),
     icon::consumer<TestSeqReq>(
       [](MessageContext<TestSeqReq> context) -> awaitable<void> {
-        spdlog::info("S2: TestSeqReq");
+        icon::utils::get_logger()->info("S2: TestSeqReq");
         auto& req = context.message();
         auto seq_req = req.seq();
         auto seq_rsp = seq_req + 1;
 
-        spdlog::info("S2: recevided seq: {}, sending: {}", seq_req, seq_rsp);
+        icon::utils::get_logger()->info("S2: recevided seq: {}, sending: {}", seq_req, seq_rsp);
         auto rsp = TestSeqCfm{};
         rsp.set_seq(seq_rsp);
 
@@ -122,7 +122,7 @@ void server()
   work_guard_type work_guard(bctx.get_executor());
   bctx.run();
 
-  spdlog::info("Server thread stop");
+  icon::utils::get_logger()->info("Server thread stop");
 }
 
 awaitable<void> run_client_for_s1(icon::BasicClient& client, const char* endpoint)
@@ -133,7 +133,7 @@ awaitable<void> run_client_for_s1(icon::BasicClient& client, const char* endpoin
     auto seq_req = icon::TestSeqReq{};
     seq_req.set_seq(i);
 
-    spdlog::info("C1: sending seq req: {}", i);
+    icon::utils::get_logger()->info("C1: sending seq req: {}", i);
 
     auto rsp = co_await client.async_send(std::move(seq_req));
     assert(rsp.is<icon::TestSeqCfm>());
@@ -141,10 +141,10 @@ awaitable<void> run_client_for_s1(icon::BasicClient& client, const char* endpoin
 
     assert(msg.seq() == i * 2);
     ClientSentMessages++;
-    spdlog::info("C1: received seq cfm: {}", msg.seq());
+    icon::utils::get_logger()->info("C1: received seq cfm: {}", msg.seq());
   }
 
-  spdlog::info("Client1 completed");
+  icon::utils::get_logger()->info("Client1 completed");
 }
 
 awaitable<void> run_client_for_s2(icon::BasicClient& client, const char* endpoint)
@@ -155,7 +155,7 @@ awaitable<void> run_client_for_s2(icon::BasicClient& client, const char* endpoin
     auto seq_req = icon::TestSeqReq{};
     seq_req.set_seq(i);
 
-    spdlog::info("C2: sending seq req: {}", i);
+    icon::utils::get_logger()->info("C2: sending seq req: {}", i);
 
     auto rsp = co_await client.async_send(std::move(seq_req));
     assert(rsp.is<icon::TestSeqCfm>());
@@ -163,10 +163,10 @@ awaitable<void> run_client_for_s2(icon::BasicClient& client, const char* endpoin
 
     assert(msg.seq() == i + 1);
     ClientSentMessages++;
-    spdlog::info("C2: received seq cfm: {}", msg.seq());
+    icon::utils::get_logger()->info("C2: received seq cfm: {}", msg.seq());
   }
 
-  spdlog::info("Client2 completed");
+  icon::utils::get_logger()->info("Client2 completed");
 }
 
 void client()
@@ -185,7 +185,7 @@ void client()
   work_guard_type work_guard(bctx_cl.get_executor());
   bctx_cl.run();
 
-  spdlog::info("Client thread stop");
+  icon::utils::get_logger()->info("Client thread stop");
 }
 
 bool task_completed()
@@ -222,10 +222,10 @@ TEST_CASE("Multiple endpoints exchange messages with multiple clients")
 
   guard.join();
   server_th.join();
-  spdlog::info("Server thread joined");
+  icon::utils::get_logger()->info("Server thread joined");
 
   client1_th.join();
-  spdlog::info("Client thread joined");
+  icon::utils::get_logger()->info("Client thread joined");
 
   REQUIRE(ServerReceivedMessages == NumberOfMessages * 2);
   REQUIRE(ClientSentMessages == NumberOfMessages * 2);

@@ -64,14 +64,14 @@ public:
   BasicClient(zmq::context_t& zctx, boost::asio::io_context& bctx)
     : socket_{ zctx, zmq::socket_type::dealer }, watcher_{ socket_, bctx }
   {
-    spdlog::debug("BasicClient ctor");
+   icon::utils::get_logger()->debug("BasicClient ctor");
 
     socket_.set(zmq::sockopt::linger, 0);
   }
 
   awaitable<bool> async_connect(const char* endpoint)// TODO: Change to string, string view etc
   {
-    spdlog::debug("BasicClient: connecting to endpoint: {}, is_connected: {}", endpoint, is_socket_connected_);
+   icon::utils::get_logger()->debug("BasicClient: connecting to endpoint: {}, is_connected: {}", endpoint, is_socket_connected_);
 
     if (is_socket_connected_) {
       co_return true;
@@ -90,7 +90,7 @@ public:
   {
     using namespace boost::asio::experimental::awaitable_operators;
 
-    spdlog::debug("BasicClient: async_send()");
+   icon::utils::get_logger()->debug("BasicClient: async_send()");
 
     if (!is_connected()) {
       throw std::runtime_error("Basic Client not connected");
@@ -112,7 +112,7 @@ private:
   template<MessageToSend Message, class Timeout>
   awaitable<std::optional<ErrorCode>> async_send_message(Message&& message, Timeout timeout)
   {
-    spdlog::debug("BasicClient: async_send_with_response()");
+   icon::utils::get_logger()->debug("BasicClient: async_send_with_response()");
 
     // TODO: instead of timeout guard, awaitable_operators could be used but, they are still in ::experimental
 
@@ -134,7 +134,7 @@ private:
   template<class Timeout>
   awaitable<Response_t> async_receive_message(Timeout timeout)
   {
-    spdlog::debug("Basic client: async_receive");
+   icon::utils::get_logger()->debug("Basic client: async_receive");
 
     auto executor = co_await boost::asio::this_coro::executor;
     auto zmq_recv_op = details::ZmqCoRecvOp{ socket_, watcher_ };
