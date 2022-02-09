@@ -18,7 +18,14 @@ protobuf_generate(
   PROTOS
     ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
     ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+  PROTOC_OUT_DIR
+    ${CMAKE_BINARY_DIR}
 )
+
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+#   ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
+#   ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+# )
 
 # -----------------------------------------------------------------------
 # Make static library from objlib
@@ -31,7 +38,7 @@ add_library(objlib OBJECT
 )
 
 target_include_directories(objlib PRIVATE ${CMAKE_SOURCE_DIR})
-target_include_directories(objlib PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(objlib PRIVATE
   lpthread
   spdlog::spdlog
@@ -41,14 +48,16 @@ add_library(${CMAKE_PROJECT_NAME} STATIC $<TARGET_OBJECTS:objlib>)
 # -----------------------------------------------------------------------
 # Install
 # -----------------------------------------------------------------------
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING
-  PATTERN "*.h"
-  PATTERN "*.hpp"
-  PATTERN "*.proto"
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/icon DESTINATION include
+  FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp"
+    PATTERN "*.proto"
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/icon DESTINATION include FILES_MATCHING
-  PATTERN "*pb.h"
+install(DIRECTORY ${CMAKE_BINARY_DIR}/icon DESTINATION include
+  FILES_MATCHING PATTERN "*pb.h"
+  PATTERN "CMakeFiles*" EXCLUDE
 )
 
 install(TARGETS ${CMAKE_PROJECT_NAME} EXPORT iconTargets
