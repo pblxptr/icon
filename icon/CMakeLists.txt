@@ -19,7 +19,7 @@ protobuf_generate(
     ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
     ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
   PROTOC_OUT_DIR
-    ${CMAKE_BINARY_DIR}
+    ${CMAKE_BINARY_DIR}/icon
 )
 
 # protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
@@ -37,8 +37,11 @@ add_library(objlib OBJECT
   ${PROTO_HDRS}
 )
 
+message(WARNING "CMAKE_CURRENT_BINARY_DIR " ${CMAKE_CURRENT_BINARY_DIR})
+message(WARNING "CMAKE_BINARY_DIR " ${CMAKE_BINARY_DIR})
+
 target_include_directories(objlib PRIVATE ${CMAKE_SOURCE_DIR})
-target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR})
+target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR}/icon)
 target_link_libraries(objlib PRIVATE
   lpthread
   spdlog::spdlog
