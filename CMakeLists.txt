@@ -19,7 +19,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
-add_subdirectory(icon)
+add_subdirectory(icon ${CMAKE_BINARY_DIR}/icon)
 
 if (ENABLE_TESTING)
   include_directories(${CMAKE_BINARY_DIR}/tests)
