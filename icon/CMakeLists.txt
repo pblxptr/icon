@@ -24,12 +24,12 @@ find_package(Protobuf REQUIRED)
 #     ${CMAKE_BINARY_DIR}/icon
 # )
 
-set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
-set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-  ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-  ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
-)
+# set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
+# set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+#   ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
+#   ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+# )
 
 # -----------------------------------------------------------------------
 # Make static library from objlib
