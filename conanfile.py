@@ -36,7 +36,7 @@ class IconConan(ConanFile):
     requires = [
       "boost/1.78.0",
       "cppzmq/4.8.1",
-      "protobuf/3.19.2",
+      "protobuf/3.17.1",
       "spdlog/1.9.2",
     ]
 
