@@ -12,28 +12,12 @@ find_package(Protobuf REQUIRED)
 # -----------------------------------------------------------------------
 #TODO: TEMP
 
-# set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
-# protobuf_generate(
-#   IMPORT_DIRS ${CMAKE_SOURCE_DIR}
-#   LANGUAGE
-#     cpp
-#   OUT_VAR
-#     PROTO_SRCS
-#     PROTO_HDRS
-#   PROTOS
-#     ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-#     ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
-#   PROTOC_OUT_DIR
-#     ${CMAKE_BINARY_DIR}/icon
+# # set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
+# set(Protobuf_IMPORT_DIRS ${PROJECT_SOURCE_DIR})
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+#   ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
+#   ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
 # )
-
-
-set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
-set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-  ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-  ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
-)
 
 # -----------------------------------------------------------------------
 # Make static library from objlib
@@ -45,13 +29,9 @@ add_library(objlib OBJECT
   ${PROTO_HDRS}
 )
 
-message(WARNING "CMAKE_CURRENT_BINARY_DIR " ${CMAKE_CURRENT_BINARY_DIR})
-message(WARNING "CMAKE_BINARY_DIR " ${CMAKE_BINARY_DIR})
-
 target_include_directories(objlib PRIVATE ${protobuf_INCLUDES})
 target_include_directories(objlib PRIVATE ${CMAKE_SOURCE_DIR})
 target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR}/icon)
-target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR})
 target_link_libraries(objlib PRIVATE
   lpthread
   spdlog::spdlog
