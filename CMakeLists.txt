@@ -19,19 +19,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
-
-set(Protobuf_DEBUG TRUE)
-
-find_package(Protobuf REQUIRED)
-set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
-set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-  ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-  ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
-)
-
-
-
 add_subdirectory(icon)
 
 if (ENABLE_TESTING)

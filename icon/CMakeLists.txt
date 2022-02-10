@@ -3,6 +3,8 @@
 # -----------------------------------------------------------------------
 find_package(spdlog REQUIRED)
 find_package(Boost 1.77 REQUIRED coroutine)
+
+set(Protobuf_DEBUG TRUE)
 find_package(Protobuf REQUIRED)
 
 # -----------------------------------------------------------------------
@@ -24,12 +26,13 @@ find_package(Protobuf REQUIRED)
 #     ${CMAKE_BINARY_DIR}/icon
 # )
 
-# set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
-# set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-#   ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-#   ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
-# )
+
+set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
+set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+  ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
+  ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+)
 
 # -----------------------------------------------------------------------
 # Make static library from objlib
@@ -44,6 +47,7 @@ add_library(objlib OBJECT
 message(WARNING "CMAKE_CURRENT_BINARY_DIR " ${CMAKE_CURRENT_BINARY_DIR})
 message(WARNING "CMAKE_BINARY_DIR " ${CMAKE_BINARY_DIR})
 
+target_include_directories(objlib PRIVATE ${protobuf_INCLUDES})
 target_include_directories(objlib PRIVATE ${CMAKE_SOURCE_DIR})
 target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR}/icon)
 target_link_libraries(objlib PRIVATE
