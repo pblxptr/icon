@@ -20,10 +20,11 @@ endif()
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
 
-
 find_package(Protobuf REQUIRED)
+include_directories(${protobuf_INCLUDES})
+link_libraries(${protobuf_LIBRARIES})
+
 set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
-# set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
 protobuf_generate(
   IMPORT_DIRS ${CMAKE_SOURCE_DIR}
   LANGUAGE
@@ -37,6 +38,9 @@ protobuf_generate(
   PROTOC_OUT_DIR
     ${CMAKE_BINARY_DIR}/icon
 )
+add_library(proto-objlib OBJECT ${PROTO_SRCS} ${PROTO_HDRS})
+target_include_directories(proto-objlib PUBLIC ${CMAKE_BINARY_DIR}/icon)
+
 
 add_subdirectory(icon)
 
