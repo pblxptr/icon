@@ -3,7 +3,7 @@
 #include <icon/client/request.hpp>
 #include <icon/client/response.hpp>
 #include <icon/protobuf/protobuf_serialization.hpp>
-#include <tests/dummy.pb.h>
+#include <tests/gen-proto/dummy.pb.h>
 
 TEST_CASE("Response contains data")
 {

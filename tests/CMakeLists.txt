@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.18)
 # -----------------------------------------------------------------------
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
+
 # -----------------------------------------------------------------------
 # Setup external packages
 # -----------------------------------------------------------------------
@@ -18,7 +19,7 @@ find_package(Protobuf REQUIRED)
 # -----------------------------------------------------------------------
 set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-  ${CMAKE_SOURCE_DIR}/tests/dummy.proto
+  ${CMAKE_SOURCE_DIR}/tests/gen-proto/dummy.proto
 )
 
 set(TEST_LIBRARIES
