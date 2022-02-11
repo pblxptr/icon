@@ -26,7 +26,7 @@ jobs:
       run: sudo pip install conan
 
     - name: Install conan dependencies
-      run: conan install -if ${{github.workspace}} -of ${{github.workspace}}/build -o enable_testing=True --build=missing
+      run: conan install -if=${{github.workspace}}/build ${{github.workspace}} -o enable_testing=True --build=missing
 
     - name: Using the builtin GitHub Cache Action for .conan
       if: matrix.os == 'windows-latest'
