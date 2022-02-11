@@ -5,19 +5,6 @@ find_package(spdlog REQUIRED)
 find_package(Boost 1.77 REQUIRED coroutine)
 
 set(Protobuf_DEBUG TRUE)
-find_package(Protobuf REQUIRED)
-
-# -----------------------------------------------------------------------
-# Generate proto files
-# -----------------------------------------------------------------------
-#TODO: TEMP
-
-# # set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
-# set(Protobuf_IMPORT_DIRS ${PROJECT_SOURCE_DIR})
-# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
-#   ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
-#   ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
-# )
 
 # -----------------------------------------------------------------------
 # Make static library from objlib

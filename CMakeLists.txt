@@ -19,7 +19,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
-
+# -----------------------------------------------------------------------
+# Generate protobuf
+# -----------------------------------------------------------------------
 find_package(Protobuf REQUIRED)
 include_directories(${protobuf_INCLUDES})
 link_libraries(${protobuf_LIBRARIES})
@@ -45,12 +47,12 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/icon/icon DESTINATION include
   PATTERN "CMakeFiles*" EXCLUDE
 )
 
-
-
 add_subdirectory(icon)
 
+# -----------------------------------------------------------------------
+# Compile tests if requested
+# -----------------------------------------------------------------------
 if (ENABLE_TESTING)
-  include_directories(${CMAKE_BINARY_DIR}/tests)
   enable_testing()
   add_subdirectory(tests)
 endif()
