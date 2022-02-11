@@ -12,7 +12,7 @@ public:
   TimeoutGuard(ExecutorA&& executor, HandlerA&& handler, Duration duration = std::chrono::milliseconds{ 0 })
     : timer_{ std::forward<ExecutorA>(executor) }, handler_{ std::forward<HandlerA>(handler) }, duration_{ std::move(duration) }
   {
-    spdlog::debug("TimeoutGuard: ctor");
+   icon::utils::get_logger()->debug("TimeoutGuard: ctor");
   }
 
   template<class Duration>
@@ -38,11 +38,11 @@ public:
 
           if (ec != boost::asio::error::operation_aborted)
           {
-            spdlog::debug("TimeoutGuard: timer expired, calling expiration handler.");
+           icon::utils::get_logger()->debug("TimeoutGuard: timer expired, calling expiration handler.");
             handle_expired();
           }
           else {
-            spdlog::debug("TimeoutGuard: operation cancelled.");
+           icon::utils::get_logger()->debug("TimeoutGuard: operation cancelled.");
           } }, [](auto eptr) { if (eptr) { std::rethrow_exception(eptr); } });
   }
 

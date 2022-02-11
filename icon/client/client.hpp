@@ -16,7 +16,7 @@ public:
 
   awaitable<bool> async_connect(const char* endpoint)
   {
-    spdlog::debug("Client: connecting to endpoint: {}, is_connected: {}", endpoint, is_connection_established_);
+   icon::utils::get_logger()->debug("Client: connecting to endpoint: {}, is_connected: {}", endpoint, is_connection_established_);
 
     if (is_connected()) {
       co_return true;
@@ -38,8 +38,8 @@ public:
 private:
   awaitable<void> init_connection_async()
   {
-    using ConEstablishReq_t = icon::transport::ConnectionEstablishReq;
-    using ConEstablishCfm_t = icon::transport::ConnectionEstablishCfm;
+    using ConEstablishReq_t = icon::ConnectionEstablishReq;
+    using ConEstablishCfm_t = icon::ConnectionEstablishCfm;
 
     const auto response = co_await async_send_with_response(ConEstablishReq_t{});
 
@@ -47,7 +47,7 @@ private:
       throw std::runtime_error("Connection establish failed");
     }
 
-    spdlog::debug("Client: connected");
+   icon::utils::get_logger()->debug("Client: connected");
 
     is_connection_established_ = true;
   }

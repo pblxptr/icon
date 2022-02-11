@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "metadata.proto";
+import "icon/metadata/metadata.proto";
 
 package icon.dummy;
 

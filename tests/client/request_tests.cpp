@@ -2,7 +2,7 @@
 
 #include <icon/client/request.hpp>
 #include <icon/protobuf/protobuf_serialization.hpp>
-#include <dummy.pb.h>
+#include <tests/dummy.pb.h>
 
 TEST_CASE("Request contains valid data")
 {

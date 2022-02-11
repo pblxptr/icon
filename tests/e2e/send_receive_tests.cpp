@@ -3,11 +3,11 @@
 #include <icon/endpoint/endpoint_config.hpp>
 #include <icon/protobuf/protobuf_serialization.hpp>
 #include <icon/client/basic_client.hpp>
-#include <dummy.pb.h>
+#include <tests/dummy.pb.h>
 
 constexpr auto EndpointS1 = "tcp://127.0.0.1:6909";
 
-using namespace icon::transport;
+using namespace icon;
 using namespace icon::dummy;
 
 template<class Message, class Consumer>

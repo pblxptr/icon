@@ -3,54 +3,49 @@
 # -----------------------------------------------------------------------
 find_package(spdlog REQUIRED)
 find_package(Boost 1.77 REQUIRED coroutine)
+
+set(Protobuf_DEBUG TRUE)
 find_package(Protobuf REQUIRED)
-set (Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR}/icon/protobuf)
 
 # -----------------------------------------------------------------------
-# Workaround for clang, Boost asio has relased coroutines without fully supported clang
+# Generate proto files
 # -----------------------------------------------------------------------
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
-  set(CMAKE_CXX_FLAGS "-std=c++20")
-endif()
-add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
+#TODO: TEMP
+
+# # set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
+# set(Protobuf_IMPORT_DIRS ${PROJECT_SOURCE_DIR})
+# protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
+#   ${CMAKE_SOURCE_DIR}/icon/metadata/metadata.proto
+#   ${CMAKE_SOURCE_DIR}/icon/protobuf/icon.proto
+# )
 
 # -----------------------------------------------------------------------
 # Make static library from objlib
 # -----------------------------------------------------------------------
-set(SOURCES
-  endpoint/basic_endpoint/basic_endpoint.cpp
-)
-protobuf_generate_cpp(
-  PROTO_SRCS PROTO_HDRS
-  protobuf/metadata.proto
-  protobuf/icon.proto
-)
-
+set(SOURCES endpoint/basic_endpoint/basic_endpoint.cpp)
 add_library(objlib OBJECT
   ${SOURCES}
-  ${PROTO_SRCS}
-  ${PROTO_HDRS}
+  # ${PROTO_SRCS}
+  # ${PROTO_HDRS}
 )
-
 target_include_directories(objlib PRIVATE ${CMAKE_SOURCE_DIR})
-target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR})
+target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR}/icon)
 target_link_libraries(objlib PRIVATE
   lpthread
   spdlog::spdlog
 )
-add_library(${CMAKE_PROJECT_NAME} STATIC $<TARGET_OBJECTS:objlib>)
+add_library(${CMAKE_PROJECT_NAME} STATIC $<TARGET_OBJECTS:objlib> $<TARGET_OBJECTS:proto-objlib>)
 
 # -----------------------------------------------------------------------
 # Install
 # -----------------------------------------------------------------------
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
-install(FILES
-  ${CMAKE_BINARY_DIR}/icon/metadata.pb.h
-  ${CMAKE_BINARY_DIR}/icon/icon.pb.h
-DESTINATION include/icon )
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/icon DESTINATION include
+  FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp"
+    PATTERN "*.proto"
+)
 
-message(TEFERERE + ${CMAKE_BINARY_DIR})
 install(TARGETS ${CMAKE_PROJECT_NAME} EXPORT iconTargets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

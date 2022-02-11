@@ -54,23 +54,23 @@ void add_info(Info info)
 
 void dump_info(const Info& info)
 {
-  spdlog::debug("Dump infor for thread: {}", info.thread_id);
+  icon::utils::get_logger()->debug("Dump infor for thread: {}", info.thread_id);
 
   for (const auto& e : info.endpoints) {
-    spdlog::debug("-- Endpoint bind : {}", e);
+    icon::utils::get_logger()->debug("-- Endpoint bind : {}", e);
   }
 
   for (const auto& c : info.clients) {
-    spdlog::debug("-- Client connected: {}", c);
+    icon::utils::get_logger()->debug("-- Client connected: {}", c);
   }
 
-  spdlog::debug("------------------------------------");
+  icon::utils::get_logger()->debug("------------------------------------");
 }
 
 void add_context(boost::asio::io_context* ctx)
 {
   auto lock = std::scoped_lock{ contexts_mtx };
-  spdlog::debug("Add context");
+  icon::utils::get_logger()->debug("Add context");
 
   contexts.emplace_back(ctx);
 }
@@ -88,7 +88,6 @@ auto create_endpoint(boost::asio::io_context& bctx, zmq::context_t& zctx, const 
 {
   using namespace icon;
   using namespace icon::details;
-  using namespace icon::transport;
 
   return icon::setup_default_endpoint(
     icon::use_services(bctx, zctx),
@@ -113,16 +112,16 @@ awaitable<void> run_client(icon::BasicClient& client, const std::string endpoint
   co_await client.async_connect(endpoint.c_str());
 
   for (size_t i = 0; i < NumberOfMessagesPerClient; i++) {
-    auto seq_req = icon::transport::TestSeqReq{};
+    auto seq_req = icon::TestSeqReq{};
     seq_req.set_seq(i);
 
-    spdlog::debug("Client send...");
+    icon::utils::get_logger()->debug("Client send...");
 
     auto rsp = co_await client.async_send(std::move(seq_req));
-    assert(rsp.is<icon::transport::TestSeqCfm>());
-    const auto msg = rsp.get<icon::transport::TestSeqCfm>();
+    assert(rsp.is<icon::TestSeqCfm>());
+    const auto msg = rsp.get<icon::TestSeqCfm>();
 
-    spdlog::debug("Client received...");
+    icon::utils::get_logger()->debug("Client received...");
 
     ++ProcessedMessages;
 
@@ -219,7 +218,7 @@ void guard_thread()
 
   while (true) {
     if (std::chrono::system_clock::now() > deadline) {
-      spdlog::error("Timeout reached. Terminate.");
+      icon::utils::get_logger()->error("Timeout reached. Terminate.");
       std::terminate();
     }
 
@@ -227,7 +226,7 @@ void guard_thread()
       break;
     } else {
       std::this_thread::sleep_for(std::chrono::seconds(5));
-      spdlog::debug("ProcessedMessages: {}", ProcessedMessages);
+      icon::utils::get_logger()->debug("ProcessedMessages: {}", ProcessedMessages);
     }
   }
 
@@ -238,11 +237,11 @@ void guard_thread()
 
 void print_summary()
 {
-  spdlog::debug("Running on {} threads", NumberOfThreads);
-  spdlog::debug("Total endpoints: {}", NumberOfEndpoints);
-  spdlog::debug("Total clients: {}", NumberOfClientsPerThread * NumberOfThreads);
-  spdlog::debug("Expected messages: {}", ExpectedProocessedMessages);
-  spdlog::debug("Processed messages: {}", ProcessedMessages);
+  icon::utils::get_logger()->debug("Running on {} threads", NumberOfThreads);
+  icon::utils::get_logger()->debug("Total endpoints: {}", NumberOfEndpoints);
+  icon::utils::get_logger()->debug("Total clients: {}", NumberOfClientsPerThread * NumberOfThreads);
+  icon::utils::get_logger()->debug("Expected messages: {}", ExpectedProocessedMessages);
+  icon::utils::get_logger()->debug("Processed messages: {}", ProcessedMessages);
 
   for (const auto& info : infos) {
     dump_info(info);
