@@ -40,6 +40,11 @@ protobuf_generate(
 )
 add_library(proto-objlib OBJECT ${PROTO_SRCS} ${PROTO_HDRS})
 target_include_directories(proto-objlib PUBLIC ${CMAKE_BINARY_DIR}/icon)
+install(DIRECTORY ${CMAKE_BINARY_DIR}/icon/icon DESTINATION include
+  FILES_MATCHING PATTERN "*pb.h"
+  PATTERN "CMakeFiles*" EXCLUDE
+)
+
 
 
 add_subdirectory(icon)
