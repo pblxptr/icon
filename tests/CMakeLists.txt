@@ -17,7 +17,8 @@ find_package(Protobuf REQUIRED)
 # -----------------------------------------------------------------------
 # Generate protobuf
 # -----------------------------------------------------------------------
-set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR})
+set(PROTOBUF_GENERATE_CPP_APPEND_PATH FALSE)
+set(Protobuf_IMPORT_DIRS ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
   ${CMAKE_SOURCE_DIR}/tests/gen-proto/dummy.proto
 )
