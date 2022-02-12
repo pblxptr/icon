@@ -31,11 +31,13 @@ set(TEST_LIBRARIES
   spdlog::spdlog
   fmt
   Catch2::Catch2WithMain
+  ${protobuf_LIBRARIES}
 )
 
 # -----------------------------------------------------------------------
 # Build UnitTests executable
 # -----------------------------------------------------------------------
+include_directories(${protobuf_INCLUDES})
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR}/icon)
 include_directories(${CMAKE_BINARY_DIR}/tests)
