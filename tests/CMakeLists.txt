@@ -31,7 +31,7 @@ set(TEST_LIBRARIES
   spdlog::spdlog
   fmt
   Catch2::Catch2WithMain
-  ${protobuf_LIBRARIES}
+  protobuf
 )
 
 # -----------------------------------------------------------------------

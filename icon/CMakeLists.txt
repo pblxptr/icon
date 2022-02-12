@@ -10,11 +10,7 @@ set(Protobuf_DEBUG TRUE)
 # Make static library from objlib
 # -----------------------------------------------------------------------
 set(SOURCES endpoint/basic_endpoint/basic_endpoint.cpp)
-add_library(objlib OBJECT
-  ${SOURCES}
-  # ${PROTO_SRCS}
-  # ${PROTO_HDRS}
-)
+add_library(objlib OBJECT ${SOURCES})
 target_include_directories(objlib PRIVATE ${CMAKE_SOURCE_DIR})
 target_include_directories(objlib PRIVATE ${CMAKE_BINARY_DIR}/icon)
 target_link_libraries(objlib PRIVATE
@@ -22,7 +18,6 @@ target_link_libraries(objlib PRIVATE
   spdlog::spdlog
 )
 add_library(${CMAKE_PROJECT_NAME} STATIC $<TARGET_OBJECTS:objlib> $<TARGET_OBJECTS:proto-objlib>)
-
 # -----------------------------------------------------------------------
 # Install
 # -----------------------------------------------------------------------
