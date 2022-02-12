@@ -33,6 +33,7 @@ jobs:
         libboost-all-dev
         protobuf-compiler
         libprotoc-dev
+        libsodium-dev
 
     ######### BOOST #########
     - name: Cache Boost
