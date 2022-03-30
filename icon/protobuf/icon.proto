@@ -1,3 +1,9 @@
+
+/* iCon library interface */
+
+//Base: 0x10000000
+//Max: 30
+
 syntax = "proto3";
 
 import "icon/metadata/metadata.proto";
@@ -11,12 +17,12 @@ message Header
 
 message ConnectionEstablishReq
 {
-  option (icon.metadata.MESSAGE_NUMBER) = 0x10000001;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000000;
 }
 
 message ConnectionEstablishCfm
 {
-  option (icon.metadata.MESSAGE_NUMBER) = 0x10000002;
+  option (icon.metadata.MESSAGE_NUMBER) = 0x10000001;
 }
 
 message HeartbeatReq

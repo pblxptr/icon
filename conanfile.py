@@ -72,13 +72,10 @@ class IconConan(ConanFile):
           cmake.test();
 
     def package(self):
-        self.copy("*.h", dst="include/icon", src="icon")
-        self.copy("*.hpp", dst="include/icon", src="icon")
-        self.copy("*.lib", dst="lib", keep_path=False)
-        self.copy("*.dll", dst="bin", keep_path=False)
-        self.copy("*.dylib*", dst="lib", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
-        self.copy("*.a", dst="lib", keep_path=False)
+        self.copy("*.hpp", src="icon", dst="include")
+        self.copy("*.proto", src="icon", dst="include")
+        self.copy("*.pb.h", src="icon/icon", dst="include")
+        self.copy("*.a", dst="lib")
 
     def package_info(self):
         self.cpp_info.libs = ["icon"]
