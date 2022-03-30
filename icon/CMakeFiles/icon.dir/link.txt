@@ -1,2 +1,0 @@
-/usr/bin/ar qc libicon.a CMakeFiles/objlib.dir/endpoint/basic_endpoint/basic_endpoint.cpp.o ../CMakeFiles/proto-objlib.dir/icon/icon/metadata/metadata.pb.cc.o ../CMakeFiles/proto-objlib.dir/icon/icon/protobuf/icon.pb.cc.o
-/usr/bin/ranlib libicon.a
