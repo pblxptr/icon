@@ -77,4 +77,19 @@ TEST_CASE("Client connetecs to endpoint")
     co_spawn(bctx, client_func(), propagate_exception);
     bctx.run();
   }
+
+  SECTION("sending a message when client instance was moved to coroutine does not throw any errors")
+  {
+    auto client = icon::BasicClient{ zctx, bctx };
+
+    auto client_func = [&zctx, &bctx](icon::BasicClient client) -> awaitable<void> {
+      co_await client.async_connect(EndpointS1);
+      REQUIRE_NOTHROW(co_await client.async_send(icon::dummy::TestSeqReq{}));
+      bctx.stop();
+    };
+    co_spawn(bctx, endpoint->run(), propagate_exception);
+    co_spawn(bctx, client_func(std::move(client)), propagate_exception);
+
+    bctx.run();
+  }
 }

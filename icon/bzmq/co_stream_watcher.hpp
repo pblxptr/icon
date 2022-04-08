@@ -38,7 +38,7 @@ class Co_StreamWatcher
 public:
   using Result_t = std::tuple<bool, boost::system::error_code>;
 
-  Co_StreamWatcher(zmq::socket_t& socket, boost::asio::io_context& context)
+  Co_StreamWatcher(zmq::socket_ref socket, boost::asio::io_context& context)
     : socket_{ socket }, streamd_{ context }
   {
    icon::utils::get_logger()->debug("SteramWatcher: ctor");
@@ -47,7 +47,7 @@ public:
   Co_StreamWatcher(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher& operator=(const Co_StreamWatcher&) = delete;
   Co_StreamWatcher(Co_StreamWatcher&&) = default;
-  Co_StreamWatcher& operator=(Co_StreamWatcher&&) = delete;
+  Co_StreamWatcher& operator=(Co_StreamWatcher&&) = default;
 
   ~Co_StreamWatcher()
   {
@@ -142,7 +142,7 @@ private:
   }
 
 private:
-  zmq::socket_t& socket_;
+  zmq::socket_ref socket_;
   boost::asio::posix::stream_descriptor streamd_;
   Flags_t flags_;
 };
