@@ -52,9 +52,9 @@ class BasicClient
 {
   using Serializer_t = icon::details::serialization::protobuf::ProtobufSerializer;
   using Deserializer_t = icon::details::serialization::protobuf::ProtobufDeserializer;
+public:
   using Response_t = Response<Deserializer_t>;
 
-public:
   BasicClient(const BasicClient&) = delete;
   BasicClient& operator=(const BasicClient&) = delete;
 
@@ -69,7 +69,7 @@ public:
     socket_.set(zmq::sockopt::linger, 0);
   }
 
-  awaitable<bool> async_connect(const char* endpoint)// TODO: Change to string, string view etc
+  awaitable<bool> async_connect(const char* endpoint)
   {
    icon::utils::get_logger()->debug("BasicClient: connecting to endpoint: {}, is_connected: {}", endpoint, is_socket_connected_);
 
@@ -85,11 +85,14 @@ public:
     co_return is_socket_connected_;
   }
 
+  awaitable<bool> async_connect(const std::string& endpoint)
+  {
+    co_return co_await async_connect(endpoint.c_str());
+  }
+
   template<MessageToSend Message, class Timeout = std::chrono::seconds>
   awaitable<Response_t> async_send(Message&& message, Timeout timeout = std::chrono::seconds(0))// TODO: Check timers
   {
-    using namespace boost::asio::experimental::awaitable_operators;
-
    icon::utils::get_logger()->debug("BasicClient: async_send()");
 
     if (!is_connected()) {
